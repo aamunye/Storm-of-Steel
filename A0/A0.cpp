@@ -350,6 +350,13 @@ bool A0::keyInputEvent(int key, int action, int mods) {
 
 			eventHandled = true;
 		}
+		if ( key == GLFW_KEY_Q ) {
+			cout << "q key pressed" << endl;
+			glfwSetWindowShouldClose(m_window, GL_TRUE);
+
+			eventHandled = true;
+		}
+
 	}
 
 
