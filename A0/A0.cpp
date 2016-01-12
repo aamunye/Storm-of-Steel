@@ -351,13 +351,13 @@ bool A0::keyInputEvent(int key, int action, int mods) {
 	if (action == GLFW_PRESS) {
 		if (key == GLFW_KEY_EQUAL) {
 			cout << "+ key pressed" << endl;
-			m_shape_size = m_shape_size + 0.2f;
+			m_shape_size *= 1.33f;
 
 			eventHandled = true;
 		}
 		if (key == GLFW_KEY_MINUS) {
 			cout << "- key pressed" << endl;
-			m_shape_size = m_shape_size - 0.2f;
+			m_shape_size /= 1.33f;
 
 			eventHandled = true;
 		}
