@@ -13,6 +13,8 @@ public:
 	A1();
 	virtual ~A1();
 
+	static const size_t DIM = 16;
+
 protected:
 	virtual void init() override;
 	virtual void appLogic() override;
@@ -47,4 +49,8 @@ private:
 
 	float colour[3];
 	int current_col;
+
+	// Fields related to active cell and tower height
+	int blockHeight[DIM][DIM];
+	int currentX, currentZ;
 };
