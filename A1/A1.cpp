@@ -26,7 +26,7 @@ A1::A1()
 	currentZ = 0;
 
 	// Set the heights of all the blocks to 0
-	memset(blockHeight, 0, sizeof(blockHeight));
+	memset(towerHeight, 0, sizeof(towerHeight));
 }
 
 //----------------------------------------------------------------------------------------
@@ -228,6 +228,35 @@ void A1::draw()
 void A1::cleanup()
 {}
 
+void A1::increaseTowerHeight()
+{
+	towerHeight[currentX][currentZ] += 1;
+
+	//TODO remove later
+	for(int i=0;i<16;i++){
+		for(int j=0;j<16;j++){
+			cout<<towerHeight[i][j]<<" ";
+		}
+		cout<<endl;
+	}
+}
+
+void A1::decreaseTowerHeight()
+{
+	int currentHeight = towerHeight[currentX][currentZ];
+	if ( currentHeight > 0 ) {
+			towerHeight[currentX][currentZ] = currentHeight-1;
+	}
+
+	//TODO remove later
+	for(int i=0;i<16;i++){
+		for(int j=0;j<16;j++){
+			cout<<towerHeight[i][j]<<" ";
+		}
+		cout<<endl;
+	}
+}
+
 //----------------------------------------------------------------------------------------
 /*
  * Event handler.  Handles cursor entering the window area events.
@@ -338,15 +367,19 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 		// Closing
 		if ( key == GLFW_KEY_Q ) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
+			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_R ) {
 			//TODO resetValues();
 
 		}
 		if ( key == GLFW_KEY_SPACE ) {
-			//TODO increasing height
+			increaseTowerHeight();
+			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_BACKSPACE ) {
+			decreaseTowerHeight();
+			eventHandled = true;
 			//TODO decreasing height
 		}
 	}

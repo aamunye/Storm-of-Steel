@@ -14,6 +14,7 @@ public:
 	virtual ~A1();
 
 	static const size_t DIM = 16;
+	static const size_t
 
 protected:
 	virtual void init() override;
@@ -51,6 +52,9 @@ private:
 	int current_col;
 
 	// Fields related to active cell and tower height
-	int blockHeight[DIM][DIM];
+	int towerHeight[DIM][DIM];
 	int currentX, currentZ;
+
+	void increaseTowerHeight();
+	void decreaseTowerHeight();
 };
