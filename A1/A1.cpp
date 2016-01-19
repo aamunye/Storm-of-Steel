@@ -239,6 +239,7 @@ void A1::increaseTowerHeight()
 		}
 		cout<<endl;
 	}
+	cout<<endl;
 }
 
 void A1::decreaseTowerHeight()
@@ -255,6 +256,7 @@ void A1::decreaseTowerHeight()
 		}
 		cout<<endl;
 	}
+	cout<<endl;
 }
 
 //----------------------------------------------------------------------------------------
@@ -356,12 +358,28 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 
 		// Moving the active cell around
 		if ( key == GLFW_KEY_RIGHT ) {
+			if ( currentX < DIM-1 ){
+				currentX += 1;
+			}
+			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_LEFT ) {
+			if ( currentX > 0 ){
+				currentX -= 1;
+			}
+			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_UP ) {
+			if ( currentZ > 0 ){
+				currentZ -= 1;
+			}
+			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_DOWN ) {
+			if ( currentZ < DIM-1 ){
+				currentZ += 1;
+			}
+			eventHandled = true;
 		}
 
 		// Closing

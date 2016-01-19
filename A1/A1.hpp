@@ -14,7 +14,8 @@ public:
 	virtual ~A1();
 
 	static const size_t DIM = 16;
-	static const size_t
+	//TODO set a reasonable number
+	static const size_t MAX_TOWER_HEIGHT = 10;
 
 protected:
 	virtual void init() override;
