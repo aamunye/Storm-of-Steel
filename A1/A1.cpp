@@ -2,6 +2,7 @@
 #include "cs488-framework/GlErrorCheck.hpp"
 
 #include <iostream>
+#include <ctime>
 
 #include <imgui/imgui.h>
 #include <glm/glm.hpp>
@@ -17,9 +18,11 @@ using namespace std;
 A1::A1()
 	: current_col( 0 )
 {
-	colour[0] = 0.0f;
-	colour[1] = 0.0f;
-	colour[2] = 0.0f;
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 3; j++) {
+			colours[i][j] = randomGenerator();
+		}
+	}
 
 	// Set the initial active cell of the program
 	currentX = 0;
@@ -27,6 +30,7 @@ A1::A1()
 
 	// Set the heights of all the blocks to 0
 	memset(towerHeight, 0, sizeof(towerHeight));
+	memset(cellColour, 0, sizeof(cellColour));
 }
 
 //----------------------------------------------------------------------------------------
@@ -129,6 +133,13 @@ void A1::initGrid()
 void A1::appLogic()
 {
 	// Place per frame, application logic here ...
+	if( towerHeight[currentX][currentZ] > 0 )
+	{
+		current_col = cellColour[currentX][currentZ];
+	} else {
+		//TODO explain why this is needed
+		cellColour[currentX][currentZ] = current_col;
+	}
 }
 
 //----------------------------------------------------------------------------------------
@@ -153,6 +164,18 @@ void A1::guiLogic()
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
 
+		if( ImGui::Button( "Print Colour Array" ) ) {
+			//TODO remove later
+			for(int i=0;i<16;i++){
+				for(int j=0;j<16;j++){
+					cout<<cellColour[j][i]<<" ";
+				}
+				cout<<endl;
+			}
+			cout<<endl;
+
+		}
+
 		// Eventually you'll create multiple colour widgets with
 		// radio buttons.  If you use PushID/PopID to give them all
 		// unique IDs, then ImGui will be able to keep them separate.
@@ -163,10 +186,66 @@ void A1::guiLogic()
 		// displayed.
 
 		ImGui::PushID( 0 );
-		ImGui::ColorEdit3( "##Colour", colour );
+		ImGui::ColorEdit3( "##Colour", colours[0] );
 		ImGui::SameLine();
 		if( ImGui::RadioButton( "##Col", &current_col, 0 ) ) {
-			// Select this colour.
+			updateCurrentColour();
+		}
+		ImGui::PopID();
+
+		ImGui::PushID( 1 );
+		ImGui::ColorEdit3( "##Colour", colours[1] );
+		ImGui::SameLine();
+		if( ImGui::RadioButton( "##Col", &current_col, 1 ) ) {
+			updateCurrentColour();
+		}
+		ImGui::PopID();
+
+		ImGui::PushID( 2 );
+		ImGui::ColorEdit3( "##Colour", colours[2] );
+		ImGui::SameLine();
+		if( ImGui::RadioButton( "##Col", &current_col, 2 ) ) {
+			updateCurrentColour();
+		}
+		ImGui::PopID();
+
+		ImGui::PushID( 3 );
+		ImGui::ColorEdit3( "##Colour", colours[3] );
+		ImGui::SameLine();
+		if( ImGui::RadioButton( "##Col", &current_col, 3 ) ) {
+			updateCurrentColour();
+		}
+		ImGui::PopID();
+
+		ImGui::PushID( 4 );
+		ImGui::ColorEdit3( "##Colour", colours[4] );
+		ImGui::SameLine();
+		if( ImGui::RadioButton( "##Col", &current_col, 4 ) ) {
+			updateCurrentColour();
+		}
+		ImGui::PopID();
+
+		ImGui::PushID( 5 );
+		ImGui::ColorEdit3( "##Colour", colours[5] );
+		ImGui::SameLine();
+		if( ImGui::RadioButton( "##Col", &current_col, 5 ) ) {
+			updateCurrentColour();
+		}
+		ImGui::PopID();
+
+		ImGui::PushID( 6 );
+		ImGui::ColorEdit3( "##Colour", colours[6] );
+		ImGui::SameLine();
+		if( ImGui::RadioButton( "##Col", &current_col, 6 ) ) {
+			updateCurrentColour();
+		}
+		ImGui::PopID();
+
+		ImGui::PushID( 7 );
+		ImGui::ColorEdit3( "##Colour", colours[7] );
+		ImGui::SameLine();
+		if( ImGui::RadioButton( "##Col", &current_col, 7 ) ) {
+			updateCurrentColour();
 		}
 		ImGui::PopID();
 
@@ -228,6 +307,16 @@ void A1::draw()
 void A1::cleanup()
 {}
 
+float A1::randomGenerator()
+{
+	return (float)rand()/(float)(RAND_MAX/1);
+}
+
+void A1::updateCurrentColour()
+{
+	cellColour[currentX][currentZ] = current_col;
+}
+
 void A1::increaseTowerHeight()
 {
 	towerHeight[currentX][currentZ] += 1;
@@ -235,7 +324,7 @@ void A1::increaseTowerHeight()
 	//TODO remove later
 	for(int i=0;i<16;i++){
 		for(int j=0;j<16;j++){
-			cout<<towerHeight[i][j]<<" ";
+			cout<<towerHeight[j][i]<<" ";
 		}
 		cout<<endl;
 	}
@@ -252,7 +341,7 @@ void A1::decreaseTowerHeight()
 	//TODO remove later
 	for(int i=0;i<16;i++){
 		for(int j=0;j<16;j++){
-			cout<<towerHeight[i][j]<<" ";
+			cout<<towerHeight[j][i]<<" ";
 		}
 		cout<<endl;
 	}

@@ -49,13 +49,20 @@ private:
 	glm::mat4 proj;
 	glm::mat4 view;
 
-	float colour[3];
+	float colours[8][3];
 	int current_col;
 
 	// Fields related to active cell and tower height
 	int towerHeight[DIM][DIM];
 	int currentX, currentZ;
 
+
+	// Field related to cell colours
+	int cellColour[DIM][DIM];
+
 	void increaseTowerHeight();
 	void decreaseTowerHeight();
+
+	float randomGenerator();
+	void updateCurrentColour();
 };
