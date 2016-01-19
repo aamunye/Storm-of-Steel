@@ -176,6 +176,18 @@ void A1::guiLogic()
 
 		}
 
+		if( ImGui::Button( "Print Heights Array" ) ) {
+			//TODO remove later
+			for(int i=0;i<16;i++){
+				for(int j=0;j<16;j++){
+					cout<<towerHeight[j][i]<<" ";
+				}
+				cout<<endl;
+			}
+			cout<<endl;
+
+		}
+
 		// Eventually you'll create multiple colour widgets with
 		// radio buttons.  If you use PushID/PopID to give them all
 		// unique IDs, then ImGui will be able to keep them separate.
@@ -320,15 +332,6 @@ void A1::updateCurrentColour()
 void A1::increaseTowerHeight()
 {
 	towerHeight[currentX][currentZ] += 1;
-
-	//TODO remove later
-	for(int i=0;i<16;i++){
-		for(int j=0;j<16;j++){
-			cout<<towerHeight[j][i]<<" ";
-		}
-		cout<<endl;
-	}
-	cout<<endl;
 }
 
 void A1::decreaseTowerHeight()
@@ -337,15 +340,6 @@ void A1::decreaseTowerHeight()
 	if ( currentHeight > 0 ) {
 			towerHeight[currentX][currentZ] = currentHeight-1;
 	}
-
-	//TODO remove later
-	for(int i=0;i<16;i++){
-		for(int j=0;j<16;j++){
-			cout<<towerHeight[j][i]<<" ";
-		}
-		cout<<endl;
-	}
-	cout<<endl;
 }
 
 //----------------------------------------------------------------------------------------
@@ -432,42 +426,29 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 		//TODO add eventHandled=true; to these things
 		// http://www.glfw.org/docs/latest/group__mods.html
 
-		//TODO
-		// This is the shifted arrow keys
-		if ( mods == GLFW_MOD_SHIFT ) {
-			if ( key == GLFW_KEY_RIGHT ) {
-			}
-			if ( key == GLFW_KEY_LEFT ) {
-			}
-			if ( key == GLFW_KEY_UP ) {
-			}
-			if ( key == GLFW_KEY_DOWN ) {
-			}
+		int dx=0, dz=0;
+		if ( key == GLFW_KEY_RIGHT ) {
+			dx = 1;
+		} else if ( key == GLFW_KEY_LEFT ) {
+			dx = -1;
+		} else if ( key == GLFW_KEY_UP ) {
+			dz = -1;
+		} else if ( key == GLFW_KEY_DOWN ) {
+			dz = 1;
 		}
 
-		// Moving the active cell around
-		if ( key == GLFW_KEY_RIGHT ) {
-			if ( currentX < DIM-1 ){
-				currentX += 1;
+		int destX = currentX + dx;
+		int destZ = currentZ + dz;
+		//TODO deal with situation when both didn't move
+		// or explain how if no movement is made that it's not a problem
+		if( destX >= 0 && destX < DIM && destZ >= 0 && destZ < DIM) {
+
+			if ( mods == GLFW_MOD_SHIFT ) {
+				towerHeight[destX][destZ] = towerHeight[currentX][currentZ];
+				cellColour[destX][destZ] = cellColour[currentX][currentZ];
 			}
-			eventHandled = true;
-		}
-		if ( key == GLFW_KEY_LEFT ) {
-			if ( currentX > 0 ){
-				currentX -= 1;
-			}
-			eventHandled = true;
-		}
-		if ( key == GLFW_KEY_UP ) {
-			if ( currentZ > 0 ){
-				currentZ -= 1;
-			}
-			eventHandled = true;
-		}
-		if ( key == GLFW_KEY_DOWN ) {
-			if ( currentZ < DIM-1 ){
-				currentZ += 1;
-			}
+			currentX += dx;
+			currentZ += dz;
 			eventHandled = true;
 		}
 
