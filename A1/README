@@ -1,0 +1,30 @@
+Compiling:
+The compiling process has not been modified.
+To compile and run the program, make sure that the objects in the cs489-a0a1
+folder have been built first, then run the following commands from the A1
+directory, enter:
+  premake4 clean
+  premake4 gmake
+  make
+  ./A1
+
+As for this program, it was written and tested on the gl32.student.cs machine.
+
+Manual:
+
+There are a couple of things to note that I have added:
+1) To indicate the active cell, I changed the colour of the top face of the tower
+   to produce a random colour every frame.
+   [Full Disclosure: I got this idea from one of the TAs I was talking to]
+
+2) To make the edges of the cubes easy to see, I used the same buffer of vertices
+   for drawing the triangles to also draw white lines between the edges.
+   The active cell has black lines instead of white to make it easier to see.
+
+There were some things in the assignment specifications that I didn't have time to do:
+1) Drawing the active cell indicator on top of all the other objects
+2) Implementing the "R" Key to reset the values and clear the grid
+3) Implementing mouse rotation
+4) Scaling using the scrolling the mouse
+5) This one wasn't really a specification, but I wish I created my towers by defining
+   the cubes and then just translate them to the right part of the grid and translate.
