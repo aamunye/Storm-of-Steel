@@ -88,7 +88,11 @@ void A1::initGrid()
 
 	towersVertices = new float[ tsz ];
 	// TODO replace with calls to updateTowersVertices()
-	memset(towersVertices, 0, sizeof(towersVertices));
+	//memset(towersVertices, 0, sizeof(towersVertices));
+
+	for(int i=0;i<tsz;i++){
+		towersVertices[i]=0.0f;
+	}
 
 	glGenVertexArrays( 1, &m_towers_vao );
 	glBindVertexArray( m_towers_vao );
@@ -216,6 +220,25 @@ void A1::guiLogic()
 
 		}
 
+		if( ImGui::Button( "Current x, z" ) ) {
+			//TODO remove later
+			cout<<"Current X: "<<currentX<<endl;
+			cout<<"Current Z: "<<currentZ<<endl;
+
+		}
+
+		if( ImGui::Button( "Print x=0,z=1" ) ) {
+			//TODO remove later
+			cout<<endl;
+			for(int i=0;i<6*2*3*3;i++){
+				cout<<(1)*6*2*3*3+i<<" "<<towersVertices[(1)*6*2*3*3+i]<<endl;
+			}
+			cout<<endl;
+
+		}
+
+
+
 		// Eventually you'll create multiple colour widgets with
 		// radio buttons.  If you use PushID/PopID to give them all
 		// unique IDs, then ImGui will be able to keep them separate.
@@ -341,10 +364,10 @@ void A1::draw()
 				//cols = colours[cellColour[x][z]];
 				for(int i=0;i<3;i++){
 					cols[i] = colours[cellColour[x][z]][i];
+					//cols[i] = colours[0][i];
 				}
 				glUniform3f( col_uni, cols[0], cols[1], cols[2] );
-				//glUniform3f( col_uni, cellColour[0][0], cellColour[0][1], cellColour[0][2] );
-				glDrawArrays( GL_TRIANGLES, 0, 12);
+				glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3, 12);
 
 			}
 		}
@@ -366,8 +389,10 @@ void A1::cleanup()
 
 void A1::updateTowersVertices(int xCord, int zCord)
 {
-	int offset = (DIM * xCord + zCord) * 6 * 2 * 3;
+	cout<<"xCord is "<<xCord<<" zCord is "<<zCord<<endl;
+	int offset = (DIM * xCord + zCord) * 6 * 2 * 3 * 3;
 	int height = towerHeight[xCord][zCord];
+	cout<<"offset is "<<offset<<endl;
 
 	size_t ct = 0;
 
@@ -380,19 +405,19 @@ void A1::updateTowersVertices(int xCord, int zCord)
 	towersVertices[ offset + ct + 4 ] = 0;
 	towersVertices[ offset + ct + 5 ] = zCord;
 
-	towersVertices[ offset + ct + 6 		] = xCord+1;
+	towersVertices[ offset + ct + 6 ] = xCord+1;
 	towersVertices[ offset + ct + 7 ] = 0;
 	towersVertices[ offset + ct + 8 ] = zCord+1;
 
-	towersVertices[ offset + ct 	+9	] = xCord;
+	towersVertices[ offset + ct + 9 ] = xCord;
 	towersVertices[ offset + ct + 10 ] = 0;
 	towersVertices[ offset + ct + 11 ] = zCord;
 
-	towersVertices[ offset + ct 	+12	] = xCord;
+	towersVertices[ offset + ct + 12 ] = xCord;
 	towersVertices[ offset + ct + 13 ] = 0;
 	towersVertices[ offset + ct + 14 ] = zCord+1;
 
-	towersVertices[ offset + ct 	+ 15	] = xCord+1;
+	towersVertices[ offset + ct + 15 ] = xCord+1;
 	towersVertices[ offset + ct + 16 ] = 0;
 	towersVertices[ offset + ct + 17 ] = zCord+1;
 
@@ -407,19 +432,19 @@ void A1::updateTowersVertices(int xCord, int zCord)
 	towersVertices[ offset + ct + 4 ] = height;
 	towersVertices[ offset + ct + 5 ] = zCord;
 
-	towersVertices[ offset + ct + 6 		] = xCord+1;
+	towersVertices[ offset + ct + 6	] = xCord+1;
 	towersVertices[ offset + ct + 7 ] = height;
 	towersVertices[ offset + ct + 8 ] = zCord+1;
 
-	towersVertices[ offset + ct 	+9	] = xCord;
+	towersVertices[ offset + ct + 9	] = xCord;
 	towersVertices[ offset + ct + 10 ] = height;
 	towersVertices[ offset + ct + 11 ] = zCord;
 
-	towersVertices[ offset + ct 	+12	] = xCord;
+	towersVertices[ offset + ct + 12 ] = xCord;
 	towersVertices[ offset + ct + 13 ] = height;
 	towersVertices[ offset + ct + 14 ] = zCord+1;
 
-	towersVertices[ offset + ct 	+ 15	] = xCord+1;
+	towersVertices[ offset + ct + 15 ] = xCord+1;
 	towersVertices[ offset + ct + 16 ] = height;
 	towersVertices[ offset + ct + 17 ] = zCord+1;
 
@@ -428,8 +453,8 @@ void A1::updateTowersVertices(int xCord, int zCord)
 	glBindBuffer( GL_ARRAY_BUFFER, m_towers_vbo );
 	glBufferData( GL_ARRAY_BUFFER, tsz*sizeof(float), towersVertices, GL_STATIC_DRAW );
 
-	for(int i=0;i<20;i++){
-		cout<<i<<" "<<towersVertices[i]<<endl;
+	for(int i=0;i<6*2*3*3;i++){
+		cout<<offset+i<<" "<<towersVertices[offset+i]<<endl;
 	}
 
 }

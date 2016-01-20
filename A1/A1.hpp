@@ -16,7 +16,7 @@ public:
 	static const size_t DIM = 16;
 	//TODO set a reasonable number
 	static const size_t MAX_TOWER_HEIGHT = 10;
-	static const size_t tsz = DIM * DIM * 6 * 2 * 3;
+	static const size_t tsz = DIM * DIM * 6 * 2 * 3 * 3;
 
 protected:
 	virtual void init() override;
