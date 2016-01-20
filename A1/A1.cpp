@@ -360,14 +360,27 @@ void A1::draw()
 
 		for(int x=0;x<DIM;x++){
 			for(int z=0;z<DIM;z++){
-				float cols[3];
-				//cols = colours[cellColour[x][z]];
-				for(int i=0;i<3;i++){
-					cols[i] = colours[cellColour[x][z]][i];
-					//cols[i] = colours[0][i];
+				if(towerHeight[x][z] > 0){
+					float cols[3];
+					//cols = colours[cellColour[x][z]];
+					for(int i=0;i<3;i++){
+						cols[i] = colours[cellColour[x][z]][i];
+					}
+					if ( x == currentX && z == currentZ ) {
+						glUniform3f( col_uni, randomGenerator(), randomGenerator(), randomGenerator() );
+						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3, 6);
+						glUniform3f( col_uni, cols[0], cols[1], cols[2] );
+						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3+6, 32-6);
+						glUniform3f( col_uni, 0, 0, 0 );
+						glDrawArrays( GL_LINES, (x*DIM+z)*6*2*3, 32);
+					} else {
+						glUniform3f( col_uni, cols[0], cols[1], cols[2] );
+						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3, 32);
+						glUniform3f( col_uni, 1, 1, 1 );
+						glDrawArrays( GL_LINES, (x*DIM+z)*6*2*3, 32);
+					}
 				}
-				glUniform3f( col_uni, cols[0], cols[1], cols[2] );
-				glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3, 12);
+
 
 			}
 		}
@@ -396,6 +409,33 @@ void A1::updateTowersVertices(int xCord, int zCord)
 
 	size_t ct = 0;
 
+	// Top
+	towersVertices[ offset + ct 		] = xCord;
+	towersVertices[ offset + ct + 1 ] = height;
+	towersVertices[ offset + ct + 2 ] = zCord;
+
+	towersVertices[ offset + ct +	3	] = xCord+1;
+	towersVertices[ offset + ct + 4 ] = height;
+	towersVertices[ offset + ct + 5 ] = zCord;
+
+	towersVertices[ offset + ct + 6	] = xCord+1;
+	towersVertices[ offset + ct + 7 ] = height;
+	towersVertices[ offset + ct + 8 ] = zCord+1;
+
+	towersVertices[ offset + ct + 9	] = xCord;
+	towersVertices[ offset + ct + 10 ] = height;
+	towersVertices[ offset + ct + 11 ] = zCord;
+
+	towersVertices[ offset + ct + 12 ] = xCord;
+	towersVertices[ offset + ct + 13 ] = height;
+	towersVertices[ offset + ct + 14 ] = zCord+1;
+
+	towersVertices[ offset + ct + 15 ] = xCord+1;
+	towersVertices[ offset + ct + 16 ] = height;
+	towersVertices[ offset + ct + 17 ] = zCord+1;
+
+	ct += 18;
+
 	// Bottom
 	towersVertices[ offset + ct 		] = xCord;
 	towersVertices[ offset + ct + 1 ] = 0;
@@ -423,25 +463,106 @@ void A1::updateTowersVertices(int xCord, int zCord)
 
 	ct += 18;
 
-	// Top
+	// Left
 	towersVertices[ offset + ct 		] = xCord;
-	towersVertices[ offset + ct + 1 ] = height;
+	towersVertices[ offset + ct + 1 ] = 0;
 	towersVertices[ offset + ct + 2 ] = zCord;
 
-	towersVertices[ offset + ct +	3	] = xCord+1;
+	towersVertices[ offset + ct +	3	] = xCord;
 	towersVertices[ offset + ct + 4 ] = height;
 	towersVertices[ offset + ct + 5 ] = zCord;
 
-	towersVertices[ offset + ct + 6	] = xCord+1;
+	towersVertices[ offset + ct + 6 ] = xCord;
 	towersVertices[ offset + ct + 7 ] = height;
 	towersVertices[ offset + ct + 8 ] = zCord+1;
 
-	towersVertices[ offset + ct + 9	] = xCord;
-	towersVertices[ offset + ct + 10 ] = height;
+	towersVertices[ offset + ct + 9 ] = xCord;
+	towersVertices[ offset + ct + 10 ] = 0;
 	towersVertices[ offset + ct + 11 ] = zCord;
 
 	towersVertices[ offset + ct + 12 ] = xCord;
-	towersVertices[ offset + ct + 13 ] = height;
+	towersVertices[ offset + ct + 13 ] = 0;
+	towersVertices[ offset + ct + 14 ] = zCord+1;
+
+	towersVertices[ offset + ct + 15 ] = xCord;
+	towersVertices[ offset + ct + 16 ] = height;
+	towersVertices[ offset + ct + 17 ] = zCord+1;
+
+	ct += 18;
+
+	// Right
+	towersVertices[ offset + ct 		] = xCord+1;
+	towersVertices[ offset + ct + 1 ] = 0;
+	towersVertices[ offset + ct + 2 ] = zCord+1;
+
+	towersVertices[ offset + ct +	3	] = xCord+1;
+	towersVertices[ offset + ct + 4 ] = height;
+	towersVertices[ offset + ct + 5 ] = zCord+1;
+
+	towersVertices[ offset + ct + 6 ] = xCord+1;
+	towersVertices[ offset + ct + 7 ] = height;
+	towersVertices[ offset + ct + 8 ] = zCord;
+
+	towersVertices[ offset + ct + 9 ] = xCord+1;
+	towersVertices[ offset + ct + 10 ] = 0;
+	towersVertices[ offset + ct + 11 ] = zCord+1;
+
+	towersVertices[ offset + ct + 12 ] = xCord+1;
+	towersVertices[ offset + ct + 13 ] = 0;
+	towersVertices[ offset + ct + 14 ] = zCord;
+
+	towersVertices[ offset + ct + 15 ] = xCord+1;
+	towersVertices[ offset + ct + 16 ] = height;
+	towersVertices[ offset + ct + 17 ] = zCord;
+
+	ct += 18;
+
+	// Back
+	towersVertices[ offset + ct 		] = xCord;
+	towersVertices[ offset + ct + 1 ] = 0;
+	towersVertices[ offset + ct + 2 ] = zCord;
+
+	towersVertices[ offset + ct +	3	] = xCord;
+	towersVertices[ offset + ct + 4 ] = height;
+	towersVertices[ offset + ct + 5 ] = zCord;
+
+	towersVertices[ offset + ct + 6 ] = xCord+1;
+	towersVertices[ offset + ct + 7 ] = height;
+	towersVertices[ offset + ct + 8 ] = zCord;
+
+	towersVertices[ offset + ct + 9 ] = xCord;
+	towersVertices[ offset + ct + 10 ] = 0;
+	towersVertices[ offset + ct + 11 ] = zCord;
+
+	towersVertices[ offset + ct + 12 ] = xCord+1;
+	towersVertices[ offset + ct + 13 ] = 0;
+	towersVertices[ offset + ct + 14 ] = zCord;
+
+	towersVertices[ offset + ct + 15 ] = xCord+1;
+	towersVertices[ offset + ct + 16 ] = height;
+	towersVertices[ offset + ct + 17 ] = zCord;
+
+	ct += 18;
+
+	// Front
+	towersVertices[ offset + ct 		] = xCord;
+	towersVertices[ offset + ct + 1 ] = 0;
+	towersVertices[ offset + ct + 2 ] = zCord+1;
+
+	towersVertices[ offset + ct +	3	] = xCord;
+	towersVertices[ offset + ct + 4 ] = height;
+	towersVertices[ offset + ct + 5 ] = zCord+1;
+
+	towersVertices[ offset + ct + 6 ] = xCord+1;
+	towersVertices[ offset + ct + 7 ] = height;
+	towersVertices[ offset + ct + 8 ] = zCord+1;
+
+	towersVertices[ offset + ct + 9 ] = xCord;
+	towersVertices[ offset + ct + 10 ] = 0;
+	towersVertices[ offset + ct + 11 ] = zCord+1;
+
+	towersVertices[ offset + ct + 12 ] = xCord+1;
+	towersVertices[ offset + ct + 13 ] = 0;
 	towersVertices[ offset + ct + 14 ] = zCord+1;
 
 	towersVertices[ offset + ct + 15 ] = xCord+1;
@@ -449,6 +570,7 @@ void A1::updateTowersVertices(int xCord, int zCord)
 	towersVertices[ offset + ct + 17 ] = zCord+1;
 
 	ct += 18;
+
 
 	glBindBuffer( GL_ARRAY_BUFFER, m_towers_vbo );
 	glBufferData( GL_ARRAY_BUFFER, tsz*sizeof(float), towersVertices, GL_STATIC_DRAW );
