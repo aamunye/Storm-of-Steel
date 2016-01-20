@@ -18,6 +18,7 @@ using namespace std;
 A1::A1()
 	: current_col( 0 )
 {
+
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 3; j++) {
 			colours[i][j] = randomGenerator();
@@ -36,7 +37,9 @@ A1::A1()
 //----------------------------------------------------------------------------------------
 // Destructor
 A1::~A1()
-{}
+{
+	delete [] towersVertices;
+}
 
 //----------------------------------------------------------------------------------------
 /*
@@ -77,6 +80,31 @@ void A1::init()
 
 void A1::initGrid()
 {
+	// Start of Towers
+
+	/* This number corresponds to all the vertices needed to build
+	 * the towers
+	 */
+
+	towersVertices = new float[ tsz ];
+	// TODO replace with calls to updateTowersVertices()
+	memset(towersVertices, 0, sizeof(towersVertices));
+
+	glGenVertexArrays( 1, &m_towers_vao );
+	glBindVertexArray( m_towers_vao );
+
+	glGenBuffers( 1, &m_towers_vbo );
+	glBindBuffer( GL_ARRAY_BUFFER, m_towers_vbo );
+	glBufferData( GL_ARRAY_BUFFER, tsz*sizeof(float),
+		towersVertices, GL_STATIC_DRAW );
+
+	GLint posAttrib2 = m_shader.getAttribLocation( "position" );
+	glEnableVertexAttribArray( posAttrib2 );
+	glVertexAttribPointer( posAttrib2, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
+
+		// End of Towers
+
+
 	size_t sz = 3 * 2 * 2 * (DIM+3);
 
 	float *verts = new float[ sz ];
@@ -303,6 +331,23 @@ void A1::draw()
 		glDrawArrays( GL_LINES, 0, (3+DIM)*4 );
 
 		// Draw the cubes
+		glBindVertexArray( m_towers_vao );
+		//glUniform3f( col_uni, colours[cellColour[0][0]][0],colours[cellColour[0][0]][1],colours[cellColour[0][0]][2]);
+		//glDrawArrays( GL_TRIANGLES, 0, 12);
+
+		for(int x=0;x<DIM;x++){
+			for(int z=0;z<DIM;z++){
+				float cols[3];
+				//cols = colours[cellColour[x][z]];
+				for(int i=0;i<3;i++){
+					cols[i] = colours[cellColour[x][z]][i];
+				}
+				glUniform3f( col_uni, cols[0], cols[1], cols[2] );
+				//glUniform3f( col_uni, cellColour[0][0], cellColour[0][1], cellColour[0][2] );
+				glDrawArrays( GL_TRIANGLES, 0, 12);
+
+			}
+		}
 		// Highlight the active square.
 	m_shader.disable();
 
@@ -321,6 +366,71 @@ void A1::cleanup()
 
 void A1::updateTowersVertices(int xCord, int zCord)
 {
+	int offset = (DIM * xCord + zCord) * 6 * 2 * 3;
+	int height = towerHeight[xCord][zCord];
+
+	size_t ct = 0;
+
+	// Bottom
+	towersVertices[ offset + ct 		] = xCord;
+	towersVertices[ offset + ct + 1 ] = 0;
+	towersVertices[ offset + ct + 2 ] = zCord;
+
+	towersVertices[ offset + ct +	3	] = xCord+1;
+	towersVertices[ offset + ct + 4 ] = 0;
+	towersVertices[ offset + ct + 5 ] = zCord;
+
+	towersVertices[ offset + ct + 6 		] = xCord+1;
+	towersVertices[ offset + ct + 7 ] = 0;
+	towersVertices[ offset + ct + 8 ] = zCord+1;
+
+	towersVertices[ offset + ct 	+9	] = xCord;
+	towersVertices[ offset + ct + 10 ] = 0;
+	towersVertices[ offset + ct + 11 ] = zCord;
+
+	towersVertices[ offset + ct 	+12	] = xCord;
+	towersVertices[ offset + ct + 13 ] = 0;
+	towersVertices[ offset + ct + 14 ] = zCord+1;
+
+	towersVertices[ offset + ct 	+ 15	] = xCord+1;
+	towersVertices[ offset + ct + 16 ] = 0;
+	towersVertices[ offset + ct + 17 ] = zCord+1;
+
+	ct += 18;
+
+	// Top
+	towersVertices[ offset + ct 		] = xCord;
+	towersVertices[ offset + ct + 1 ] = height;
+	towersVertices[ offset + ct + 2 ] = zCord;
+
+	towersVertices[ offset + ct +	3	] = xCord+1;
+	towersVertices[ offset + ct + 4 ] = height;
+	towersVertices[ offset + ct + 5 ] = zCord;
+
+	towersVertices[ offset + ct + 6 		] = xCord+1;
+	towersVertices[ offset + ct + 7 ] = height;
+	towersVertices[ offset + ct + 8 ] = zCord+1;
+
+	towersVertices[ offset + ct 	+9	] = xCord;
+	towersVertices[ offset + ct + 10 ] = height;
+	towersVertices[ offset + ct + 11 ] = zCord;
+
+	towersVertices[ offset + ct 	+12	] = xCord;
+	towersVertices[ offset + ct + 13 ] = height;
+	towersVertices[ offset + ct + 14 ] = zCord+1;
+
+	towersVertices[ offset + ct 	+ 15	] = xCord+1;
+	towersVertices[ offset + ct + 16 ] = height;
+	towersVertices[ offset + ct + 17 ] = zCord+1;
+
+	ct += 18;
+
+	glBindBuffer( GL_ARRAY_BUFFER, m_towers_vbo );
+	glBufferData( GL_ARRAY_BUFFER, tsz*sizeof(float), towersVertices, GL_STATIC_DRAW );
+
+	for(int i=0;i<20;i++){
+		cout<<i<<" "<<towersVertices[i]<<endl;
+	}
 
 }
 

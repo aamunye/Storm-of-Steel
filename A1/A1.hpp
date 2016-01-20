@@ -16,6 +16,7 @@ public:
 	static const size_t DIM = 16;
 	//TODO set a reasonable number
 	static const size_t MAX_TOWER_HEIGHT = 10;
+	static const size_t tsz = DIM * DIM * 6 * 2 * 3;
 
 protected:
 	virtual void init() override;
@@ -45,6 +46,10 @@ private:
 	GLuint m_grid_vao; // Vertex Array Object
 	GLuint m_grid_vbo; // Vertex Buffer Object
 
+	// Fields related to tower geometry.
+	GLuint m_towers_vao; // Vertex Array Object
+	GLuint m_towers_vbo; // Vertex Buffer Object
+
 	// Matrices controlling the camera and projection.
 	glm::mat4 proj;
 	glm::mat4 view;
@@ -52,9 +57,11 @@ private:
 	float colours[8][3];
 	int current_col;
 
-	// Fields related to active cell and tower height
+	// Fields related to the towers and theactive cell
 	int towerHeight[DIM][DIM];
 	int currentX, currentZ;
+
+	float *towersVertices;
 
 
 	// Field related to cell colours
