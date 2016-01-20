@@ -331,7 +331,10 @@ void A1::updateCurrentColour()
 
 void A1::increaseTowerHeight()
 {
-	towerHeight[currentX][currentZ] += 1;
+	int currentHeight = towerHeight[currentX][currentZ];
+	if ( currentHeight < MAX_TOWER_HEIGHT ) {
+		towerHeight[currentX][currentZ] = currentHeight + 1;
+	}
 }
 
 void A1::decreaseTowerHeight()
