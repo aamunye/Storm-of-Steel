@@ -71,7 +71,8 @@ private:
 	void decreaseTowerHeight();
 
 	float randomGenerator();
-	void updateCurrentColour();
+	void resetValues();
 
 	void updateTowersVertices(int xCord, int zCord);
+	void setCurrentColour();
 };

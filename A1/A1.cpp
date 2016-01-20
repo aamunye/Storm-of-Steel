@@ -18,20 +18,8 @@ using namespace std;
 A1::A1()
 	: current_col( 0 )
 {
-
-	for (int i = 0; i < 8; i++) {
-		for (int j = 0; j < 3; j++) {
-			colours[i][j] = randomGenerator();
-		}
-	}
-
-	// Set the initial active cell of the program
-	currentX = 0;
-	currentZ = 0;
-
-	// Set the heights of all the blocks to 0
-	memset(towerHeight, 0, sizeof(towerHeight));
-	memset(cellColour, 0, sizeof(cellColour));
+	towersVertices = new float[ tsz ];
+	resetValues();
 }
 
 //----------------------------------------------------------------------------------------
@@ -80,35 +68,10 @@ void A1::init()
 
 void A1::initGrid()
 {
-	// Start of Towers
+	// Specify the means of extracting the position values properly.
+	GLint posAttrib = m_shader.getAttribLocation( "position" );
 
-	/* This number corresponds to all the vertices needed to build
-	 * the towers
-	 */
-
-	towersVertices = new float[ tsz ];
-	// TODO replace with calls to updateTowersVertices()
-	//memset(towersVertices, 0, sizeof(towersVertices));
-
-	for(int i=0;i<tsz;i++){
-		towersVertices[i]=0.0f;
-	}
-
-	glGenVertexArrays( 1, &m_towers_vao );
-	glBindVertexArray( m_towers_vao );
-
-	glGenBuffers( 1, &m_towers_vbo );
-	glBindBuffer( GL_ARRAY_BUFFER, m_towers_vbo );
-	glBufferData( GL_ARRAY_BUFFER, tsz*sizeof(float),
-		towersVertices, GL_STATIC_DRAW );
-
-	GLint posAttrib2 = m_shader.getAttribLocation( "position" );
-	glEnableVertexAttribArray( posAttrib2 );
-	glVertexAttribPointer( posAttrib2, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
-
-		// End of Towers
-
-
+	// -------- Code for setting up grid: START ----------------
 	size_t sz = 3 * 2 * 2 * (DIM+3);
 
 	float *verts = new float[ sz ];
@@ -141,8 +104,7 @@ void A1::initGrid()
 	glBufferData( GL_ARRAY_BUFFER, sz*sizeof(float),
 		verts, GL_STATIC_DRAW );
 
-	// Specify the means of extracting the position values properly.
-	GLint posAttrib = m_shader.getAttribLocation( "position" );
+
 	glEnableVertexAttribArray( posAttrib );
 	glVertexAttribPointer( posAttrib, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
 
@@ -154,6 +116,26 @@ void A1::initGrid()
 
 	// OpenGL has the buffer now, there's no need for us to keep a copy.
 	delete [] verts;
+	// -------- Code for setting up grid: END ----------------
+
+	// -------- Code for setting up towers: START ----------------
+	glGenVertexArrays( 1, &m_towers_vao );
+	glBindVertexArray( m_towers_vao );
+
+	glGenBuffers( 1, &m_towers_vbo );
+	glBindBuffer( GL_ARRAY_BUFFER, m_towers_vbo );
+	glBufferData( GL_ARRAY_BUFFER, tsz*sizeof(float),
+		towersVertices, GL_STATIC_DRAW );
+
+	glEnableVertexAttribArray( posAttrib );
+	glVertexAttribPointer( posAttrib, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
+
+	for ( int x = 0; x < DIM; x++ ){
+		for ( int z = 0; z < DIM; z++ ){
+			updateTowersVertices(x,z);
+		}
+	}
+	// -------- Code for setting up towers: END ----------------
 
 	CHECK_GL_ERRORS;
 }
@@ -165,13 +147,8 @@ void A1::initGrid()
 void A1::appLogic()
 {
 	// Place per frame, application logic here ...
-	if( towerHeight[currentX][currentZ] > 0 )
-	{
-		current_col = cellColour[currentX][currentZ];
-	} else {
-		//TODO explain why this is needed
-		cellColour[currentX][currentZ] = current_col;
-	}
+
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -196,48 +173,9 @@ void A1::guiLogic()
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
 
-		if( ImGui::Button( "Print Colour Array" ) ) {
-			//TODO remove later
-			for(int i=0;i<16;i++){
-				for(int j=0;j<16;j++){
-					cout<<cellColour[j][i]<<" ";
-				}
-				cout<<endl;
-			}
-			cout<<endl;
-
+		if( ImGui::Button( "Reset Values" ) ) {
+			resetValues();
 		}
-
-		if( ImGui::Button( "Print Heights Array" ) ) {
-			//TODO remove later
-			for(int i=0;i<16;i++){
-				for(int j=0;j<16;j++){
-					cout<<towerHeight[j][i]<<" ";
-				}
-				cout<<endl;
-			}
-			cout<<endl;
-
-		}
-
-		if( ImGui::Button( "Current x, z" ) ) {
-			//TODO remove later
-			cout<<"Current X: "<<currentX<<endl;
-			cout<<"Current Z: "<<currentZ<<endl;
-
-		}
-
-		if( ImGui::Button( "Print x=0,z=1" ) ) {
-			//TODO remove later
-			cout<<endl;
-			for(int i=0;i<6*2*3*3;i++){
-				cout<<(1)*6*2*3*3+i<<" "<<towersVertices[(1)*6*2*3*3+i]<<endl;
-			}
-			cout<<endl;
-
-		}
-
-
 
 		// Eventually you'll create multiple colour widgets with
 		// radio buttons.  If you use PushID/PopID to give them all
@@ -248,11 +186,12 @@ void A1::guiLogic()
 		// Prefixing a widget name with "##" keeps it from being
 		// displayed.
 
+		// Colour Palette
 		ImGui::PushID( 0 );
 		ImGui::ColorEdit3( "##Colour", colours[0] );
 		ImGui::SameLine();
 		if( ImGui::RadioButton( "##Col", &current_col, 0 ) ) {
-			updateCurrentColour();
+			cellColour[currentX][currentZ] = current_col;
 		}
 		ImGui::PopID();
 
@@ -260,7 +199,7 @@ void A1::guiLogic()
 		ImGui::ColorEdit3( "##Colour", colours[1] );
 		ImGui::SameLine();
 		if( ImGui::RadioButton( "##Col", &current_col, 1 ) ) {
-			updateCurrentColour();
+			cellColour[currentX][currentZ] = current_col;
 		}
 		ImGui::PopID();
 
@@ -268,7 +207,7 @@ void A1::guiLogic()
 		ImGui::ColorEdit3( "##Colour", colours[2] );
 		ImGui::SameLine();
 		if( ImGui::RadioButton( "##Col", &current_col, 2 ) ) {
-			updateCurrentColour();
+			cellColour[currentX][currentZ] = current_col;
 		}
 		ImGui::PopID();
 
@@ -276,7 +215,7 @@ void A1::guiLogic()
 		ImGui::ColorEdit3( "##Colour", colours[3] );
 		ImGui::SameLine();
 		if( ImGui::RadioButton( "##Col", &current_col, 3 ) ) {
-			updateCurrentColour();
+			cellColour[currentX][currentZ] = current_col;
 		}
 		ImGui::PopID();
 
@@ -284,7 +223,7 @@ void A1::guiLogic()
 		ImGui::ColorEdit3( "##Colour", colours[4] );
 		ImGui::SameLine();
 		if( ImGui::RadioButton( "##Col", &current_col, 4 ) ) {
-			updateCurrentColour();
+			cellColour[currentX][currentZ] = current_col;
 		}
 		ImGui::PopID();
 
@@ -292,7 +231,7 @@ void A1::guiLogic()
 		ImGui::ColorEdit3( "##Colour", colours[5] );
 		ImGui::SameLine();
 		if( ImGui::RadioButton( "##Col", &current_col, 5 ) ) {
-			updateCurrentColour();
+			cellColour[currentX][currentZ] = current_col;
 		}
 		ImGui::PopID();
 
@@ -300,7 +239,7 @@ void A1::guiLogic()
 		ImGui::ColorEdit3( "##Colour", colours[6] );
 		ImGui::SameLine();
 		if( ImGui::RadioButton( "##Col", &current_col, 6 ) ) {
-			updateCurrentColour();
+			cellColour[currentX][currentZ] = current_col;
 		}
 		ImGui::PopID();
 
@@ -308,7 +247,7 @@ void A1::guiLogic()
 		ImGui::ColorEdit3( "##Colour", colours[7] );
 		ImGui::SameLine();
 		if( ImGui::RadioButton( "##Col", &current_col, 7 ) ) {
-			updateCurrentColour();
+			cellColour[currentX][currentZ] = current_col;
 		}
 		ImGui::PopID();
 
@@ -355,27 +294,41 @@ void A1::draw()
 
 		// Draw the cubes
 		glBindVertexArray( m_towers_vao );
-		//glUniform3f( col_uni, colours[cellColour[0][0]][0],colours[cellColour[0][0]][1],colours[cellColour[0][0]][2]);
-		//glDrawArrays( GL_TRIANGLES, 0, 12);
 
-		for(int x=0;x<DIM;x++){
-			for(int z=0;z<DIM;z++){
-				if(towerHeight[x][z] > 0){
+		for ( int x=0; x<DIM; x++ ) {
+			for ( int z=0; z<DIM; z++ ) {
+				bool activeCell = (x == currentX && z == currentZ);
+				// Only draw tower if its height is greater than 0
+				if ( towerHeight[x][z] > 0 || activeCell ) {
+					// store colour of current x and z for easy access later
 					float cols[3];
-					//cols = colours[cellColour[x][z]];
-					for(int i=0;i<3;i++){
+
+					for(int i=0; i<3; i++){
 						cols[i] = colours[cellColour[x][z]][i];
 					}
-					if ( x == currentX && z == currentZ ) {
+					if ( activeCell ) {
+						// The first six vertices correspond to the top face.
+						// Since this is the active cell, set a random colour every frame.
 						glUniform3f( col_uni, randomGenerator(), randomGenerator(), randomGenerator() );
 						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3, 6);
+
+						// For the rest of the faces, set the tower's colour
 						glUniform3f( col_uni, cols[0], cols[1], cols[2] );
 						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3+6, 32-6);
+
+						// Reuse the vertices used to create the triangles to draw lines
+						// to make the edges easy to see.
+						// Draw the active cell's lines in black
 						glUniform3f( col_uni, 0, 0, 0 );
 						glDrawArrays( GL_LINES, (x*DIM+z)*6*2*3, 32);
 					} else {
+
 						glUniform3f( col_uni, cols[0], cols[1], cols[2] );
 						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3, 32);
+
+						// Reuse the vertices used to create the triangles to draw lines
+						// to make the edges easy to see.
+						// Draw this non-active cell's lines in white
 						glUniform3f( col_uni, 1, 1, 1 );
 						glDrawArrays( GL_LINES, (x*DIM+z)*6*2*3, 32);
 					}
@@ -400,12 +353,50 @@ void A1::draw()
 void A1::cleanup()
 {}
 
+//----------------------------------------------------------------------------------------
+/*
+ * Resets the manipulated variables to their original and clear grid.
+ */
+void A1::resetValues()
+{
+		// Makes the bottom left cell the active one
+		currentX = 0;
+		currentZ = 15;
+
+		memset(towersVertices, 0.0f, sizeof(towersVertices));
+		memset(towerHeight, 0, sizeof(towerHeight));
+		memset(cellColour, 0, sizeof(cellColour));
+
+		// Select eight random colours for the colour palette
+		for(int i=0; i<8; i++){
+			for(int j=0; j<3; j++){
+				colours[i][j]=randomGenerator();
+			}
+		}
+}
+
+//----------------------------------------------------------------------------------------
+/*
+ * Resets the manipulated variables to their original  the grid.
+ */
+void A1::setCurrentColour()
+{
+	if( towerHeight[currentX][currentZ] > 0 )
+	{
+		// Set the current colour to the tower's saved colour if
+		// the tower's height is bigger than 0
+		current_col = cellColour[currentX][currentZ];
+	} else {
+		// If the tower's height is 0, set it's colour to the currently
+		// selected colour.
+		cellColour[currentX][currentZ] = current_col;
+	}
+}
+
 void A1::updateTowersVertices(int xCord, int zCord)
 {
-	cout<<"xCord is "<<xCord<<" zCord is "<<zCord<<endl;
 	int offset = (DIM * xCord + zCord) * 6 * 2 * 3 * 3;
 	int height = towerHeight[xCord][zCord];
-	cout<<"offset is "<<offset<<endl;
 
 	size_t ct = 0;
 
@@ -575,20 +566,11 @@ void A1::updateTowersVertices(int xCord, int zCord)
 	glBindBuffer( GL_ARRAY_BUFFER, m_towers_vbo );
 	glBufferData( GL_ARRAY_BUFFER, tsz*sizeof(float), towersVertices, GL_STATIC_DRAW );
 
-	for(int i=0;i<6*2*3*3;i++){
-		cout<<offset+i<<" "<<towersVertices[offset+i]<<endl;
-	}
-
 }
 
 float A1::randomGenerator()
 {
 	return (float)rand()/(float)(RAND_MAX/1);
-}
-
-void A1::updateCurrentColour()
-{
-	cellColour[currentX][currentZ] = current_col;
 }
 
 void A1::increaseTowerHeight()
@@ -717,6 +699,7 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 			currentX = destX;
 			currentZ = destZ;
 			updateTowersVertices(currentX, currentZ);
+			setCurrentColour();
 			eventHandled = true;
 		}
 
@@ -726,8 +709,8 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_R ) {
-			//TODO resetValues();
-
+			resetValues();
+			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_SPACE ) {
 			increaseTowerHeight();
