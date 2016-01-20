@@ -319,6 +319,11 @@ void A1::draw()
 void A1::cleanup()
 {}
 
+void A1::updateTowersVertices(int xCord, int zCord)
+{
+
+}
+
 float A1::randomGenerator()
 {
 	return (float)rand()/(float)(RAND_MAX/1);
@@ -334,6 +339,7 @@ void A1::increaseTowerHeight()
 	int currentHeight = towerHeight[currentX][currentZ];
 	if ( currentHeight < MAX_TOWER_HEIGHT ) {
 		towerHeight[currentX][currentZ] = currentHeight + 1;
+		updateTowersVertices(currentX, currentZ);
 	}
 }
 
@@ -342,6 +348,7 @@ void A1::decreaseTowerHeight()
 	int currentHeight = towerHeight[currentX][currentZ];
 	if ( currentHeight > 0 ) {
 			towerHeight[currentX][currentZ] = currentHeight-1;
+			updateTowersVertices(currentX, currentZ);
 	}
 }
 
@@ -442,16 +449,17 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 
 		int destX = currentX + dx;
 		int destZ = currentZ + dz;
-		//TODO deal with situation when both didn't move
-		// or explain how if no movement is made that it's not a problem
-		if( destX >= 0 && destX < DIM && destZ >= 0 && destZ < DIM) {
+
+		// dx dz is case where both are 0
+		if( ( dx|dz != 0) && destX >= 0 && destX < DIM && destZ >= 0 && destZ < DIM) {
 
 			if ( mods == GLFW_MOD_SHIFT ) {
 				towerHeight[destX][destZ] = towerHeight[currentX][currentZ];
 				cellColour[destX][destZ] = cellColour[currentX][currentZ];
 			}
-			currentX += dx;
-			currentZ += dz;
+			currentX = destX;
+			currentZ = destZ;
+			updateTowersVertices(currentX, currentZ);
 			eventHandled = true;
 		}
 

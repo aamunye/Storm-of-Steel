@@ -65,4 +65,6 @@ private:
 
 	float randomGenerator();
 	void updateCurrentColour();
+
+	void updateTowersVertices(int xCord, int zCord);
 };
