@@ -12,7 +12,7 @@ As for this program, it was written and tested on the gl32.student.cs machine.
 
 Manual:
 
-There are a couple of things to note that I have added:
+There are a couple of things to note that I have done:
 1) To indicate the active cell, I changed the colour of the top face of the tower
    to produce a random colour every frame.
    [Full Disclosure: I got this idea from one of the TAs I was talking to]
@@ -21,10 +21,15 @@ There are a couple of things to note that I have added:
    for drawing the triangles to also draw white lines between the edges.
    The active cell has black lines instead of white to make it easier to see.
 
+3) When you click the "R" key to reset values, a new colour palette is randomly selected.
+
 There were some things in the assignment specifications that I didn't have time to do:
+1) Add the screenshot
 1) Drawing the active cell indicator on top of all the other objects
-2) Implementing the "R" Key to reset the values and clear the grid
 3) Implementing mouse rotation
 4) Scaling using the scrolling the mouse
 5) This one wasn't really a specification, but I wish I created my towers by defining
-   the cubes and then just translate them to the right part of the grid and translate.
+   a single unit cube and then just translate this to the right part of the grid and transforming its height.
+
+Things I wanted to do:
+- the button c would create a falling cube or it would maybe make the active cell float
