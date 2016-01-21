@@ -297,6 +297,7 @@ void A1::guiLogic()
  */
 void A1::draw()
 {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Create a global transformation for the model (centre it).
 	mat4 W;
@@ -337,12 +338,7 @@ void A1::draw()
 						cols[i] = colours[cellColour[x][z]][i];
 					}
 					if ( activeCell ) {
-						// The first six vertices correspond to the top face.
-						// Since this is the active cell, set a random colour every frame.
-						glUniform3f( col_uni, randomGenerator(), randomGenerator(), randomGenerator() );
-						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3, 6);
-
-						// For the rest of the faces, set the tower's colour
+						// We draw the active cell's top face last
 						glUniform3f( col_uni, cols[0], cols[1], cols[2] );
 						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3+6, 32-6);
 
@@ -363,6 +359,14 @@ void A1::draw()
 						glDrawArrays( GL_LINES, (x*DIM+z)*6*2*3, 32);
 					}
 				}
+
+				// The first six vertices correspond to the top face.
+				// Since this is the active cell, set a random colour every frame.
+				//glDisable(GL_DEPTH_TEST);
+				glUniform3f( col_uni, randomGenerator(), randomGenerator(), randomGenerator() );
+				glDisable(GL_DEPTH_TEST);
+				glDrawArrays( GL_TRIANGLES, (currentX*DIM+currentZ)*6*2*3, 6);
+				glEnable(GL_DEPTH_TEST);
 
 
 			}
@@ -788,9 +792,20 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 			decreaseTowerHeight();
 			eventHandled = true;
 		}
-		if ( key == GLFW_KEY_M ) {
+
+		if ( key >= GLFW_KEY_1 && key <= GLFW_KEY_8 ) {
+			current_col = key-GLFW_KEY_1;
+			cellColour[currentX][currentZ] = current_col;
 			eventHandled = true;
 		}
+
+		if ( key >= GLFW_KEY_KP_1 && key <= GLFW_KEY_KP_8 ) {
+			current_col = key-GLFW_KEY_KP_1;
+			cellColour[currentX][currentZ] = current_col;
+			eventHandled = true;
+		}
+
+
 	}
 
 	return eventHandled;

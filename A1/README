@@ -23,12 +23,7 @@ There are a couple of things to note that I have done:
 
 3) When you click the "R" key to reset values, a new colour palette is randomly selected.
 
-There were some things in the assignment specifications that I didn't have time to do:
-1) Add the screenshot
-1) Drawing the active cell indicator on top of all the other objects
-3) Implementing mouse rotation
-5) This one wasn't really a specification, but I wish I created my towers by defining
-   a single unit cube and then just translate this to the right part of the grid and transforming its height.
+4) If you click on the numbers 1 to 8, the colour of the corresponding radio button is selected
 
 Things I wanted to do:
 - the button c would create a falling cube or it would maybe make the active cell float
