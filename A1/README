@@ -28,4 +28,5 @@ There are a couple of things to note that I have done:
 5) WASD keys make the camera fly over the grid
 
 Things I wanted to do:
-- the button c would create a falling cube or it would maybe make the active cell float
+- the button c would create a falling cube or it would maybe make the active cell float.
+- the button t would tip over and fall into other cells.
