@@ -6,6 +6,7 @@
 
 #include <imgui/imgui.h>
 #include <glm/glm.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -18,7 +19,12 @@ using namespace std;
 A1::A1()
 	: current_col( 0 )
 {
+	randam=mat4(1);
 	towersVertices = new float[ tsz ];
+
+	// Set the zoom level to 0
+	zoom = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+	zoomCount = 0;
 
 	// Makes the bottom left cell the active one
 	currentX = 0;
@@ -287,18 +293,29 @@ void A1::guiLogic()
 /*
  * Called once per frame, after guiLogic().
  */
+ float ff = 0.0f;
 void A1::draw()
 {
+
 	// Create a global transformation for the model (centre it).
 	mat4 W;
 	W = glm::translate( W, vec3( -float(DIM)/2.0f, 0, -float(DIM)/2.0f ) );
+
+	ff+=0.00001f;
+	view = glm::rotate(view,ff,vec3(0.0f,1.0f,0.0f));
+
 
 	m_shader.enable();
 		glEnable( GL_DEPTH_TEST );
 
 		glUniformMatrix4fv( P_uni, 1, GL_FALSE, value_ptr( proj ) );
-		glUniformMatrix4fv( V_uni, 1, GL_FALSE, value_ptr( view ) );
+		glUniformMatrix4fv( V_uni, 1, GL_FALSE, value_ptr( zoom * view ) );
+
 		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr( W ) );
+
+
+
+
 
 		// Just draw the grid for now.
 		glBindVertexArray( m_grid_vao );
@@ -372,6 +389,11 @@ void A1::cleanup()
  */
 void A1::resetValues()
 {
+
+		// reset the zoom values
+		zoom = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		zoomCount = 0;
+
 		// Makes the bottom left cell the active one
 		currentX = 0;
 		currentZ = 15;
@@ -412,7 +434,6 @@ void A1::setCurrentColour()
 
 void A1::updateTowersVertices(int xCord, int zCord)
 {
-	cout<<"I'm here"<<xCord<<zCord<<endl;
 	int offset = (DIM * xCord + zCord) * 6 * 2 * 3 * 3;
 	int height = towerHeight[xCord][zCord];
 
@@ -637,6 +658,7 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 		// Probably need some instance variables to track the current
 		// rotation amount, and maybe the previous X position (so
 		// that you can rotate relative to the *change* in X.
+
 	}
 
 	return eventHandled;
@@ -649,9 +671,17 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 bool A1::mouseButtonInputEvent(int button, int actions, int mods) {
 	bool eventHandled(false);
 
-	if (!ImGui::IsMouseHoveringAnyWindow()) {
-		// The user clicked in the window.  If it's the left
-		// mouse button, initiate a rotation.
+	if (actions == GLFW_PRESS) {
+		if (!ImGui::IsMouseHoveringAnyWindow()) {
+			//m_mouseButtonActive = true;
+			//m_shape_translation = m_mouse_GL_coordinate;
+			cout<<"Press"<<endl;
+		}
+	}
+
+	if (actions == GLFW_RELEASE) {
+		//m_mouseButtonActive = false;
+		cout<<"UN Press"<<endl;
 	}
 
 	return eventHandled;
@@ -664,7 +694,21 @@ bool A1::mouseButtonInputEvent(int button, int actions, int mods) {
 bool A1::mouseScrollEvent(double xOffSet, double yOffSet) {
 	bool eventHandled(false);
 
-	// Zoom in or out.
+	// Zoom in
+	if ( yOffSet > 0 && zoomCount < MAX_ZOOM_COUNT ){
+		zoomCount++;
+		zoom = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f * zoomCount));
+		eventHandled = true;
+
+	}
+
+	// Zoom out
+	if ( yOffSet < 0 && zoomCount > MIN_ZOOM_COUNT ) {
+		zoomCount--;
+		zoom = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f * zoomCount));
+		eventHandled = true;
+	}
+
 
 	return eventHandled;
 }
@@ -737,7 +781,19 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 		if ( key == GLFW_KEY_BACKSPACE ) {
 			decreaseTowerHeight();
 			eventHandled = true;
-			//TODO decreasing height
+		}
+		if ( key == GLFW_KEY_M ) {
+			cout << "m key pressed" << endl;
+			//glm::rotateY( vec3(0.0f,1.0f,0.0f), 45.0f );
+			//glm::gtc::matrix_transform::rotate(W,48.0f,vec3(0.0f,1.0f,0.0f));
+
+
+			//randam = rotate(view,0.1f,vec3(0.0f,0.0f,-1.0f));
+
+			//glm::mat3 abc = glm::rotateY( vec3(0.0f,1.0f,0.0f), 45.0f );
+
+			//zoom = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+			eventHandled = true;
 		}
 	}
 

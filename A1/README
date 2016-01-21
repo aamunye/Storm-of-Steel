@@ -27,7 +27,6 @@ There were some things in the assignment specifications that I didn't have time 
 1) Add the screenshot
 1) Drawing the active cell indicator on top of all the other objects
 3) Implementing mouse rotation
-4) Scaling using the scrolling the mouse
 5) This one wasn't really a specification, but I wish I created my towers by defining
    a single unit cube and then just translate this to the right part of the grid and transforming its height.
 

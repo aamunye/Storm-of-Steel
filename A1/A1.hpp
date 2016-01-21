@@ -18,6 +18,10 @@ public:
 	static const size_t MAX_TOWER_HEIGHT = 10;
 	static const size_t tsz = DIM * DIM * 6 * 2 * 3 * 3;
 
+	// Limits of zooming in and out
+	static const int MAX_ZOOM_COUNT = 30;
+	static const int MIN_ZOOM_COUNT = -50;
+
 protected:
 	virtual void init() override;
 	virtual void appLogic() override;
@@ -53,6 +57,9 @@ private:
 	// Matrices controlling the camera and projection.
 	glm::mat4 proj;
 	glm::mat4 view;
+	glm::mat4 zoom;
+	int zoomCount;
+	glm::mat4 randam;
 
 	float colours[8][3];
 	int current_col;
@@ -75,4 +82,6 @@ private:
 
 	void updateTowersVertices(int xCord, int zCord);
 	void setCurrentColour();
+
+	float currentZoom;
 };
