@@ -59,7 +59,6 @@ private:
 	glm::mat4 view;
 	glm::mat4 zoom;
 	int zoomCount;
-	glm::mat4 randam;
 
 	float colours[8][3];
 	int current_col;
@@ -84,4 +83,7 @@ private:
 	void setCurrentColour();
 
 	float currentZoom;
+	float totalRotation;
+	float previousMouseXPos;
+	bool mouseButtonActive;
 };

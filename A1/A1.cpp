@@ -19,7 +19,9 @@ using namespace std;
 A1::A1()
 	: current_col( 0 )
 {
-	randam=mat4(1);
+	mouseButtonActive = false;
+	previousMouseXPos = 0;
+	totalRotation = 0;
 	towersVertices = new float[ tsz ];
 
 	// Set the zoom level to 0
@@ -293,7 +295,6 @@ void A1::guiLogic()
 /*
  * Called once per frame, after guiLogic().
  */
- float ff = 0.0f;
 void A1::draw()
 {
 
@@ -301,8 +302,7 @@ void A1::draw()
 	mat4 W;
 	W = glm::translate( W, vec3( -float(DIM)/2.0f, 0, -float(DIM)/2.0f ) );
 
-	ff+=0.00001f;
-	view = glm::rotate(view,ff,vec3(0.0f,1.0f,0.0f));
+
 
 
 	m_shader.enable();
@@ -389,6 +389,8 @@ void A1::cleanup()
  */
 void A1::resetValues()
 {
+		view = glm::rotate(view,-1*totalRotation,vec3(0.0f,1.0f,0.0f));
+		totalRotation = 0;
 
 		// reset the zoom values
 		zoom = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
@@ -658,11 +660,18 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 		// Probably need some instance variables to track the current
 		// rotation amount, and maybe the previous X position (so
 		// that you can rotate relative to the *change* in X.
+		if(mouseButtonActive){
+			view = glm::rotate(view,(float)(xPos-previousMouseXPos)*0.003f,vec3(0.0f,1.0f,0.0f));
+			totalRotation += (xPos-previousMouseXPos)*0.003f;
+		}
+		previousMouseXPos = xPos;
 
 	}
 
 	return eventHandled;
 }
+
+
 
 //----------------------------------------------------------------------------------------
 /*
@@ -673,15 +682,12 @@ bool A1::mouseButtonInputEvent(int button, int actions, int mods) {
 
 	if (actions == GLFW_PRESS) {
 		if (!ImGui::IsMouseHoveringAnyWindow()) {
-			//m_mouseButtonActive = true;
-			//m_shape_translation = m_mouse_GL_coordinate;
-			cout<<"Press"<<endl;
+			mouseButtonActive = true;
 		}
 	}
 
 	if (actions == GLFW_RELEASE) {
-		//m_mouseButtonActive = false;
-		cout<<"UN Press"<<endl;
+		mouseButtonActive = false;
 	}
 
 	return eventHandled;
@@ -783,16 +789,6 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_M ) {
-			cout << "m key pressed" << endl;
-			//glm::rotateY( vec3(0.0f,1.0f,0.0f), 45.0f );
-			//glm::gtc::matrix_transform::rotate(W,48.0f,vec3(0.0f,1.0f,0.0f));
-
-
-			//randam = rotate(view,0.1f,vec3(0.0f,0.0f,-1.0f));
-
-			//glm::mat3 abc = glm::rotateY( vec3(0.0f,1.0f,0.0f), 45.0f );
-
-			//zoom = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 			eventHandled = true;
 		}
 	}
