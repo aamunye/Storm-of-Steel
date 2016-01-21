@@ -25,5 +25,7 @@ There are a couple of things to note that I have done:
 
 4) If you click on the numbers 1 to 8, the colour of the corresponding radio button is selected
 
+5) WASD keys make the camera fly over the grid
+
 Things I wanted to do:
 - the button c would create a falling cube or it would maybe make the active cell float

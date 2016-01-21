@@ -19,20 +19,23 @@ using namespace std;
 A1::A1()
 	: current_col( 0 )
 {
+	rotateMat = mat4(1.0f);
+	// Set the zoom level to 0
+	zoom = glm::mat4(1.0f);
+	zoomCount = 0;
+
+	// Set the flyMat matrix to the identity matrix
+	flyMat = mat4(1.0f);
+
 	mouseButtonActive = false;
 	previousMouseXPos = 0;
-	totalRotation = 0;
-	towersVertices = new float[ tsz ];
-
-	// Set the zoom level to 0
-	zoom = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-	zoomCount = 0;
+	towersVertices = new float[ TOTAL_COORDINATES ];
 
 	// Makes the bottom left cell the active one
 	currentX = 0;
 	currentZ = 15;
 
-	for(int i=0;i<tsz;i++){
+	for(int i=0;i<TOTAL_COORDINATES;i++){
 		towersVertices[i] = 0.0f;
 	}
 	memset(towerHeight, 0, sizeof(towerHeight));
@@ -149,7 +152,7 @@ void A1::initGrid()
 
 	glGenBuffers( 1, &m_towers_vbo );
 	glBindBuffer( GL_ARRAY_BUFFER, m_towers_vbo );
-	glBufferData( GL_ARRAY_BUFFER, tsz*sizeof(float),
+	glBufferData( GL_ARRAY_BUFFER, TOTAL_COORDINATES*sizeof(float),
 		towersVertices, GL_STATIC_DRAW );
 
 	glEnableVertexAttribArray( posAttrib );
@@ -297,28 +300,22 @@ void A1::guiLogic()
  */
 void A1::draw()
 {
+	// Clear the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Create a global transformation for the model (centre it).
 	mat4 W;
 	W = glm::translate( W, vec3( -float(DIM)/2.0f, 0, -float(DIM)/2.0f ) );
 
-
-
-
 	m_shader.enable();
 		glEnable( GL_DEPTH_TEST );
 
 		glUniformMatrix4fv( P_uni, 1, GL_FALSE, value_ptr( proj ) );
-		glUniformMatrix4fv( V_uni, 1, GL_FALSE, value_ptr( zoom * view ) );
-
-		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr( W ) );
-
+		glUniformMatrix4fv( V_uni, 1, GL_FALSE, value_ptr( zoom * view * flyMat * rotateMat ) );
+		glUniformMatrix4fv( M_uni, 1, GL_FALSE, value_ptr(  W ) );
 
 
-
-
-		// Just draw the grid for now.
+		//Draw the grid
 		glBindVertexArray( m_grid_vao );
 		glUniform3f( col_uni, 1, 1, 1 );
 		glDrawArrays( GL_LINES, 0, (3+DIM)*4 );
@@ -338,37 +335,38 @@ void A1::draw()
 						cols[i] = colours[cellColour[x][z]][i];
 					}
 					if ( activeCell ) {
-						// We draw the active cell's top face last
+						// We draw the active cell's top face last to make it stand out
+
+						// Draw the trianges
 						glUniform3f( col_uni, cols[0], cols[1], cols[2] );
-						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3+6, 32-6);
+						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*POINTS_PER_TOWER+6, 32-6);
 
 						// Reuse the vertices used to create the triangles to draw lines
 						// to make the edges easy to see.
 						// Draw the active cell's lines in black
 						glUniform3f( col_uni, 0, 0, 0 );
-						glDrawArrays( GL_LINES, (x*DIM+z)*6*2*3, 32);
+						glDrawArrays( GL_LINES, (x*DIM+z)*POINTS_PER_TOWER, 32);
 					} else {
-
+						// Draw the triangles
 						glUniform3f( col_uni, cols[0], cols[1], cols[2] );
-						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*6*2*3, 32);
+						glDrawArrays( GL_TRIANGLES, (x*DIM+z)*POINTS_PER_TOWER, 32);
 
 						// Reuse the vertices used to create the triangles to draw lines
 						// to make the edges easy to see.
 						// Draw this non-active cell's lines in white
 						glUniform3f( col_uni, 1, 1, 1 );
-						glDrawArrays( GL_LINES, (x*DIM+z)*6*2*3, 32);
+						glDrawArrays( GL_LINES, (x*DIM+z)*POINTS_PER_TOWER, 32);
 					}
 				}
 
-				// The first six vertices correspond to the top face.
+				// The first six vertices correspond to the top face.  Disable depth
+				// testing before drawing it to avoid z-buffer clashes.
 				// Since this is the active cell, set a random colour every frame.
 				//glDisable(GL_DEPTH_TEST);
 				glUniform3f( col_uni, randomGenerator(), randomGenerator(), randomGenerator() );
 				glDisable(GL_DEPTH_TEST);
-				glDrawArrays( GL_TRIANGLES, (currentX*DIM+currentZ)*6*2*3, 6);
+				glDrawArrays( GL_TRIANGLES, (currentX*DIM+currentZ)*POINTS_PER_TOWER, 6);
 				glEnable(GL_DEPTH_TEST);
-
-
 			}
 		}
 		// Highlight the active square.
@@ -393,24 +391,25 @@ void A1::cleanup()
  */
 void A1::resetValues()
 {
-		view = glm::rotate(view,-1*totalRotation,vec3(0.0f,1.0f,0.0f));
-		totalRotation = 0;
+		flyMat = mat4(1.0f);
+
+		rotateMat = mat4(1.0f);
 
 		// reset the zoom values
-		zoom = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		zoom = glm::mat4(1.0f);
 		zoomCount = 0;
 
 		// Makes the bottom left cell the active one
 		currentX = 0;
 		currentZ = 15;
 
-		for(int i=0;i<tsz;i++){
+		for(int i=0;i<TOTAL_COORDINATES;i++){
 			towersVertices[i] = 0.0f;
 		}
 		memset(towerHeight, 0, sizeof(towerHeight));
 		memset(cellColour, 0, sizeof(cellColour));
 
-		// Select eight random colours for the colour palette
+		// Select eight new random colours for the colour palette
 		for(int i=0; i<8; i++){
 			for(int j=0; j<3; j++){
 				colours[i][j]=randomGenerator();
@@ -438,9 +437,13 @@ void A1::setCurrentColour()
 	}
 }
 
+//----------------------------------------------------------------------------------------
+/*
+ * Sets the vertices of the given coordinates based on its tower's height.
+ */
 void A1::updateTowersVertices(int xCord, int zCord)
 {
-	int offset = (DIM * xCord + zCord) * 6 * 2 * 3 * 3;
+	int offset = (DIM * xCord + zCord) * COORDINATES_PER_TOWER;
 	int height = towerHeight[xCord][zCord];
 
 	size_t ct = 0;
@@ -607,17 +610,24 @@ void A1::updateTowersVertices(int xCord, int zCord)
 
 	ct += 18;
 
-
+	// Send new tower vertices to the tower's vbo
 	glBindBuffer( GL_ARRAY_BUFFER, m_towers_vbo );
-	glBufferData( GL_ARRAY_BUFFER, tsz*sizeof(float), towersVertices, GL_STATIC_DRAW );
-
+	glBufferData( GL_ARRAY_BUFFER, TOTAL_COORDINATES*sizeof(float), towersVertices, GL_STATIC_DRAW );
 }
 
+//----------------------------------------------------------------------------------------
+/*
+ * Generate a random number between 0.0f and 1.0f
+ */
 float A1::randomGenerator()
 {
 	return (float)rand()/(float)(RAND_MAX/1);
 }
 
+//----------------------------------------------------------------------------------------
+/*
+ * Increase the height of the tower.  Makes sure to not go over limit of MAX_TOWER_HEIGHT.
+ */
 void A1::increaseTowerHeight()
 {
 	int currentHeight = towerHeight[currentX][currentZ];
@@ -627,6 +637,10 @@ void A1::increaseTowerHeight()
 	}
 }
 
+//----------------------------------------------------------------------------------------
+/*
+ * Decreases the height of the tower.  Makes sure to not go below limit of 0.
+ */
 void A1::decreaseTowerHeight()
 {
 	int currentHeight = towerHeight[currentX][currentZ];
@@ -664,9 +678,11 @@ bool A1::mouseMoveEvent(double xPos, double yPos)
 		// Probably need some instance variables to track the current
 		// rotation amount, and maybe the previous X position (so
 		// that you can rotate relative to the *change* in X.
+
+		// If the mouse buton is clicked, rotate the grid by the difference between the current value
+		// and the previous values of the mouse position.
 		if(mouseButtonActive){
-			view = glm::rotate(view,(float)(xPos-previousMouseXPos)*0.003f,vec3(0.0f,1.0f,0.0f));
-			totalRotation += (xPos-previousMouseXPos)*0.003f;
+			rotateMat = glm::rotate(rotateMat, (float)(xPos-previousMouseXPos)*0.003f,vec3(0.0f,1.0f,0.0f));
 		}
 		previousMouseXPos = xPos;
 
@@ -742,11 +758,10 @@ bool A1::windowResizeEvent(int width, int height) {
 bool A1::keyInputEvent(int key, int action, int mods) {
 	bool eventHandled(false);
 
-	// Fill in with event handling code...
-	if( action == GLFW_PRESS ) {
-		//TODO add eventHandled=true; to these things
-		// http://www.glfw.org/docs/latest/group__mods.html
 
+	if( action == GLFW_PRESS ) {
+
+		// dx and dz are the amount x and z are changed by the arrow button clicked
 		int dx=0, dz=0;
 		if ( key == GLFW_KEY_RIGHT ) {
 			dx = 1;
@@ -761,15 +776,18 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 		int destX = currentX + dx;
 		int destZ = currentZ + dz;
 
-		// dx dz is case where both are 0
+		// Make sure that an arrow button was pressed and the destination is in bounds
 		if( ( dx|dz != 0) && destX >= 0 && destX < DIM && destZ >= 0 && destZ < DIM) {
 
 			if ( mods == GLFW_MOD_SHIFT ) {
+				// If there is a shift modifier, copy the height and colour of the current cell
 				towerHeight[destX][destZ] = towerHeight[currentX][currentZ];
 				cellColour[destX][destZ] = cellColour[currentX][currentZ];
 			}
+
 			currentX = destX;
 			currentZ = destZ;
+
 			updateTowersVertices(currentX, currentZ);
 			setCurrentColour();
 			eventHandled = true;
@@ -780,32 +798,54 @@ bool A1::keyInputEvent(int key, int action, int mods) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 			eventHandled = true;
 		}
+		// Resetting
 		if ( key == GLFW_KEY_R ) {
 			resetValues();
 			eventHandled = true;
 		}
+		// Increasing height of active cell
 		if ( key == GLFW_KEY_SPACE ) {
 			increaseTowerHeight();
 			eventHandled = true;
 		}
+		// Decreasing height of active cell
 		if ( key == GLFW_KEY_BACKSPACE ) {
 			decreaseTowerHeight();
 			eventHandled = true;
 		}
-
+		// Clicking on number keys on keyboard changes the selected colour
 		if ( key >= GLFW_KEY_1 && key <= GLFW_KEY_8 ) {
 			current_col = key-GLFW_KEY_1;
 			cellColour[currentX][currentZ] = current_col;
 			eventHandled = true;
 		}
-
+		// Clicking on number keys on number pad changes the selected colour
 		if ( key >= GLFW_KEY_KP_1 && key <= GLFW_KEY_KP_8 ) {
 			current_col = key-GLFW_KEY_KP_1;
 			cellColour[currentX][currentZ] = current_col;
 			eventHandled = true;
 		}
 
-
+		// Fly forwards
+		if ( key == GLFW_KEY_W ){
+			flyMat *= glm::translate(glm::vec3(0.0f,0.0f,3.2f));
+			eventHandled = true;
+		}
+		// Fly backwards
+		if ( key == GLFW_KEY_S ){
+			flyMat *= glm::translate(glm::vec3(0.0f,0.0f,-3.2f));
+			eventHandled = true;
+		}
+		// Fly towards the left
+		if ( key == GLFW_KEY_A ){
+			flyMat *= glm::translate(glm::vec3(3.2f,0.0f,0.0f));
+			eventHandled = true;
+		}
+		// Fly towards the right
+		if ( key == GLFW_KEY_D ){
+			flyMat *= glm::translate(glm::vec3(-3.2f,0.0f,0.0f));
+			eventHandled = true;
+		}
 	}
 
 	return eventHandled;

@@ -14,9 +14,15 @@ public:
 	virtual ~A1();
 
 	static const size_t DIM = 16;
-	//TODO set a reasonable number
+
+	// The maximum height a tower can be
 	static const size_t MAX_TOWER_HEIGHT = 10;
-	static const size_t tsz = DIM * DIM * 6 * 2 * 3 * 3;
+	// The total number of points needed to draw a tower
+	static const size_t POINTS_PER_TOWER = 6 * 2 * 3;
+	// The total number of coordinates(x,y,z) needed to draw a tower
+	static const size_t COORDINATES_PER_TOWER = 6 * 2 * 3 * 3;
+	// The total numerber of coordinates needed to draw all towers
+	static const size_t TOTAL_COORDINATES = DIM * DIM * 6 * 2 * 3 * 3;
 
 	// Limits of zooming in and out
 	static const int MAX_ZOOM_COUNT = 30;
@@ -39,6 +45,13 @@ protected:
 private:
 	void initGrid();
 
+	void resetValues();
+	void increaseTowerHeight();
+	void decreaseTowerHeight();
+	float randomGenerator();
+	void updateTowersVertices(int xCord, int zCord);
+	void setCurrentColour();
+
 	// Fields related to the shader and uniforms.
 	ShaderProgram m_shader;
 	GLint P_uni; // Uniform location for Projection matrix.
@@ -57,33 +70,28 @@ private:
 	// Matrices controlling the camera and projection.
 	glm::mat4 proj;
 	glm::mat4 view;
-	glm::mat4 zoom;
-	int zoomCount;
+	glm::mat4 flyMat;	// Matrix related to fly over using the WASD keys
+	glm::mat4 rotateMat;  // Matrix related to rotation using the mouse
+	glm::mat4 zoom;	// Matrix that specifies the zoom level
+	int zoomCount;	// int that specifies the zoom level to put limits
 
 	float colours[8][3];
-	int current_col;
+	int current_col;			// The current colour being displayed
 
 	// Fields related to the towers and theactive cell
 	int towerHeight[DIM][DIM];
 	int currentX, currentZ;
 
+	// List of vertices correspoinding to the tower faces.  Loaded up into
+	// the towers VBO.
 	float *towersVertices;
 
-
-	// Field related to cell colours
+	// The colour of each cell
 	int cellColour[DIM][DIM];
 
-	void increaseTowerHeight();
-	void decreaseTowerHeight();
-
-	float randomGenerator();
-	void resetValues();
-
-	void updateTowersVertices(int xCord, int zCord);
-	void setCurrentColour();
-
-	float currentZoom;
-	float totalRotation;
+	// The x coordinate of the mouse that was last stored
 	float previousMouseXPos;
+
+	// True if left mouse button is currently being clicked
 	bool mouseButtonActive;
 };
