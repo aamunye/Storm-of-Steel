@@ -19,7 +19,24 @@ A1::A1()
 	: current_col( 0 )
 {
 	towersVertices = new float[ tsz ];
-	resetValues();
+
+	// Makes the bottom left cell the active one
+	currentX = 0;
+	currentZ = 15;
+
+	for(int i=0;i<tsz;i++){
+		towersVertices[i] = 0.0f;
+	}
+	memset(towerHeight, 0, sizeof(towerHeight));
+	memset(cellColour, 0, sizeof(cellColour));
+
+	// Select eight random colours for the colour palette
+	for(int i=0; i<8; i++){
+		for(int j=0; j<3; j++){
+			colours[i][j]=randomGenerator();
+		}
+	}
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -130,11 +147,7 @@ void A1::initGrid()
 	glEnableVertexAttribArray( posAttrib );
 	glVertexAttribPointer( posAttrib, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
 
-	for ( int x = 0; x < DIM; x++ ){
-		for ( int z = 0; z < DIM; z++ ){
-			updateTowersVertices(x,z);
-		}
-	}
+	updateTowersVertices(0, 15);
 	// -------- Code for setting up towers: END ----------------
 
 	CHECK_GL_ERRORS;
@@ -295,8 +308,8 @@ void A1::draw()
 		// Draw the cubes
 		glBindVertexArray( m_towers_vao );
 
-		for ( int x=0; x<DIM; x++ ) {
-			for ( int z=0; z<DIM; z++ ) {
+		for ( int x = 0; x < DIM; x++ ) {
+			for ( int z = 0; z < DIM; z++ ) {
 				bool activeCell = (x == currentX && z == currentZ);
 				// Only draw tower if its height is greater than 0
 				if ( towerHeight[x][z] > 0 || activeCell ) {
@@ -363,7 +376,9 @@ void A1::resetValues()
 		currentX = 0;
 		currentZ = 15;
 
-		memset(towersVertices, 0.0f, sizeof(towersVertices));
+		for(int i=0;i<tsz;i++){
+			towersVertices[i] = 0.0f;
+		}
 		memset(towerHeight, 0, sizeof(towerHeight));
 		memset(cellColour, 0, sizeof(cellColour));
 
@@ -373,6 +388,8 @@ void A1::resetValues()
 				colours[i][j]=randomGenerator();
 			}
 		}
+
+		updateTowersVertices(0,15);
 }
 
 //----------------------------------------------------------------------------------------
@@ -395,6 +412,7 @@ void A1::setCurrentColour()
 
 void A1::updateTowersVertices(int xCord, int zCord)
 {
+	cout<<"I'm here"<<xCord<<zCord<<endl;
 	int offset = (DIM * xCord + zCord) * 6 * 2 * 3 * 3;
 	int height = towerHeight[xCord][zCord];
 
