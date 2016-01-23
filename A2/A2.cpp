@@ -383,5 +383,13 @@ bool A2::keyInputEvent (
 
 	// Fill in with event handling code...
 
+	if( action == GLFW_PRESS ) {
+		// Closing
+		if ( key == GLFW_KEY_Q ) {
+			glfwSetWindowShouldClose(m_window, GL_TRUE);
+			eventHandled = true;
+		}
+	}
+
 	return eventHandled;
 }
