@@ -59,6 +59,17 @@ void A2::init()
 	generateVertexBuffers();
 
 	mapVboDataToVertexAttributeLocation();
+
+	// Setup Cube Coordinates
+	cubeArray[ 0 ] = vec4( -1.0f, 1.0f, 1.0f, 0.0f );	// Front, top, left
+	cubeArray[ 1 ] = vec4( 1.0f, 1.0f, 1.0f, 0.0f );	// Front, top, right
+	cubeArray[ 2 ] = vec4( 1.0f, 1.0f, -1.0f, 0.0f );	// Back, top, right
+	cubeArray[ 3 ] = vec4( -1.0f, 1.0f, -1.0f, 0.0f );	// Back, top, left
+	cubeArray[ 4 ] = vec4( -1.0f, -1.0f, 1.0f, 0.0f );	// Front, bottom, left
+	cubeArray[ 5 ] = vec4( 1.0f, -1.0f, 1.0f, 0.0f );	// Front, bottom, right
+	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, right
+	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, left
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -207,6 +218,22 @@ void A2::appLogic()
 	drawLine(vec2(0.25f, -0.25f), vec2(0.25f, 0.25f));
 	drawLine(vec2(0.25f, 0.25f), vec2(-0.25f, 0.25f));
 	drawLine(vec2(-0.25f, 0.25f), vec2(-0.25f, -0.25f));
+
+	// Draw cube:
+	setLineColour(vec3(0.0f, 0.0f, 0.0f));
+
+	// matrix to select x and y only
+	glm::mat4 abc = mat4(
+		vec4(1.0f, 0.0f, 0.0f, 0.0f),
+		vec4(0.0f, 1.0f, 0.0f, 0.0f),
+		vec4(0.0f, 0.0f, 0.0f, 0.0f),
+		vec4(0.0f, 0.0f, 0.0f, 0.0f)
+	);
+
+	vec4 first = abc*cubeArray[0];
+	vec4 second = abc*cubeArray[5];
+	drawLine(vec2(first[0],first[1]), vec2(second[0],second[1]));
+
 }
 
 //----------------------------------------------------------------------------------------

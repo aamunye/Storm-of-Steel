@@ -70,4 +70,6 @@ protected:
 
 	glm::vec3 m_currentLineColour;
 
+	glm::vec4 cubeArray[8];
+
 };
