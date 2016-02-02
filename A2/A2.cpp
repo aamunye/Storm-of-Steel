@@ -268,11 +268,11 @@ void A2::appLogic()
 	drawLine(tempArray[2],tempArray[6]);
 
 	setLineColour(vec3(1.0f, 0.0f, 0.0f));
-	drawLine(modelGnomonArray[0],modelGnomonArray[3]);
+	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[0]-modelGnomonArray[3]));
 	setLineColour(vec3(0.0f, 1.0f, 0.0f));
-	drawLine(modelGnomonArray[1],modelGnomonArray[3]);
+	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[1]-modelGnomonArray[3]));
 	setLineColour(vec3(0.0f, 0.0f, 1.0f));
-	drawLine(modelGnomonArray[2],modelGnomonArray[3]);
+	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[2]-modelGnomonArray[3]));
 }
 
 //----------------------------------------------------------------------------------------

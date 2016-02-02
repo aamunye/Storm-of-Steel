@@ -11,8 +11,10 @@ using namespace glm;
 
 #include "cs488-framework/OpenGLImport.hpp"
 #include "cs488-framework/ShaderProgram.hpp"
+#include <glm/gtx/transform.hpp>
 
 #include <vector>
+#include <math.h>
 
 enum Mode { ROTATE_VIEW, TRANSLATE_VIEW, PERSPECTIVE, ROTATE_MODEL,
   TRANSLATE_MODEL, SCALE_MODEL, VIEWPORT };
@@ -25,12 +27,36 @@ public:
 	virtual void left( float value );
   virtual void centre( float value );
   virtual void right( float value );
+  void printMatrix(glm::mat4,string);
+  void printVecArray(glm::vec4 mat[],int length,string s);
 protected:
-  glm::vec4 worldFrame[4];
+  glm::vec4 worldFrame[4]={
+    vec4(1.0f,0.0f,0.0f,0.0f),
+    vec4(0.0f,1.0f,0.0f,0.0f),
+    vec4(0.0f,0.0f,1.0f,0.0f),
+    vec4(0.0f,0.0f,0.0f,1.0f)
+  };
+  glm::vec4 originalCubeArray[8]={
+    vec4( -1.0f, 1.0f, 1.0f, 0.0f ),	// Front, top, left
+  	vec4( 1.0f, 1.0f, 1.0f, 0.0f ),	// Front, top, right
+  	vec4( 1.0f, 1.0f, -1.0f, 0.0f ),	// Back, top, right
+  	vec4( -1.0f, 1.0f, -1.0f, 0.0f ),	// Back, top, left
+  	vec4( -1.0f, -1.0f, 1.0f, 0.0f ),	// Front, bottom, left
+  	vec4( 1.0f, -1.0f, 1.0f, 0.0f ),	// Front, bottom, right
+  	vec4( 1.0f, -1.0f, -1.0f, 0.0f ),	// Back, bottom, right
+  	vec4( -1.0f, -1.0f, -1.0f, 0.0f )	// Back, bottom, left
+  };
   glm::vec4 *modelGnomonArray;
   glm::vec4 *cubeArray;
   glm::mat4 getCOBWorldToModel();
-  void printMatrix(glm::mat4,string);
+  glm::mat4 getCOBModelToWorld();
+
+  void applyResultMatrix(mat4 result);
+  void applyMatrix(mat4 mat, vec4 arr[], int length);
+
+  static float scaleX;
+  static float scaleY;
+  static float scaleZ;
 };
 
 class RotateViewInteraction : public Interaction {
@@ -65,6 +91,10 @@ public:
 	void left( float value );
   void centre( float value );
   void right( float value );
+private:
+  float currentScaleX = 1.0f;
+  float currentScaleY = 1.0f;
+  float currentScaleZ = 1.0f;
 };
 
 class TranslateModelInteraction : public Interaction {
