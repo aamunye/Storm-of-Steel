@@ -238,7 +238,7 @@ void A2::drawLine(
 	drawLine(vec2(v0[0],v0[1]),vec2(v1[0],v1[1]));
 }
 
-vec4 tempArray[8];
+
 
 //----------------------------------------------------------------------------------------
 /*
@@ -252,7 +252,9 @@ void A2::appLogic()
 	initLineData();
 
 	// Draw cube:
+
 	setLineColour(vec3(0.0f, 0.0f, 0.0f));
+	vec4 tempArray[8];
 	for(int i=0;i<8;i++){
 		tempArray[i] = cumulativeModel * cubeArray[i];
 	}
@@ -270,12 +272,19 @@ void A2::appLogic()
 	drawLine(tempArray[3],tempArray[7]);
 	drawLine(tempArray[2],tempArray[6]);
 
+
+	vec4 tempArray2[4];
+	mat4 cumulModelTR = currentInteraction->cumulativeModelTR;
+	for(int i=0;i<4;i++){
+		tempArray2[i] = cumulModelTR * modelGnomonArray[i];
+	}
+
 	setLineColour(vec3(1.0f, 0.0f, 0.0f));
-	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[0]-modelGnomonArray[3])+modelGnomonArray[3]);
+	drawLine(tempArray2[3],0.25f*(tempArray2[0]-tempArray2[3])+tempArray2[3]);
 	setLineColour(vec3(0.0f, 1.0f, 0.0f));
-	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[1]-modelGnomonArray[3])+modelGnomonArray[3]);
+	drawLine(tempArray2[3],0.25f*(tempArray2[1]-tempArray2[3])+tempArray2[3]);
 	setLineColour(vec3(0.0f, 0.0f, 1.0f));
-	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[2]-modelGnomonArray[3])+modelGnomonArray[3]);
+	drawLine(tempArray2[3],0.25f*(tempArray2[2]-tempArray2[3])+tempArray2[3]);
 }
 
 //----------------------------------------------------------------------------------------

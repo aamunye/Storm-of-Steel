@@ -29,6 +29,8 @@ public:
   virtual void right( float value );
   void printMatrix(glm::mat4,string);
   void printVecArray(glm::vec4 mat[],int length,string s);
+  static glm::mat4 cumulativeModelTR;
+  glm::mat4 &cumulativeModel;
 protected:
   glm::vec4 worldFrame[4]={
     vec4(1.0f,0.0f,0.0f,0.0f),
@@ -60,8 +62,7 @@ protected:
 
   static glm::mat4 M;
 
-  static glm::mat4 cumulativeModelTR;
-  glm::mat4 &cumulativeModel;
+
 
 
 };
