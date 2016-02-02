@@ -70,13 +70,18 @@ void A2::init()
 	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, right
 	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, left
 
-	interactionModes[0] = new RotateViewInteraction();
-	interactionModes[1] = new TranslateViewInteraction();
-	interactionModes[2] = new PerspectiveInteraction();
-	interactionModes[3] = new RotateModelInteraction();
-	interactionModes[4] = new TranslateModelInteraction();
-	interactionModes[5] = new ScaleModelInteraction();
-	interactionModes[6] = new ViewportInteraction();
+	modelGnomonArray[ 0 ] = vec4( 1.0f, 0.0f, 0.0f, 0.0f );
+	modelGnomonArray[ 1 ] = vec4( 0.0f , 1.0f, 0.0f, 0.0f );
+	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 0.0f );
+	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.0f, 0.0f , 1.0f );	// The origin
+
+	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray);
+	interactionModes[1] = new TranslateViewInteraction(modelGnomonArray, cubeArray);
+	interactionModes[2] = new PerspectiveInteraction(modelGnomonArray, cubeArray);
+	interactionModes[3] = new RotateModelInteraction(modelGnomonArray, cubeArray);
+	interactionModes[4] = new TranslateModelInteraction(modelGnomonArray, cubeArray);
+	interactionModes[5] = new ScaleModelInteraction(modelGnomonArray, cubeArray);
+	interactionModes[6] = new ViewportInteraction(modelGnomonArray, cubeArray);
 
 	currentMode = ROTATE_VIEW;
 	currentInteraction = interactionModes[currentMode];
@@ -244,25 +249,9 @@ void A2::appLogic()
 	// Call at the beginning of frame, before drawing lines:
 	initLineData();
 
-	// Draw outer square:
-	setLineColour(vec3(1.0f, 0.7f, 0.8f));
-	drawLine(vec2(-0.5f, -0.5f), vec2(0.5f, -0.5f));
-	drawLine(vec2(0.5f, -0.5f), vec2(0.5f, 0.5f));
-	drawLine(vec2(0.5f, 0.5f), vec2(-0.5f, 0.5f));
-	drawLine(vec2(-0.5f, 0.5f), vec2(-0.5f, -0.5f));
-
-
-	// Draw inner square:
-	setLineColour(vec3(0.2f, 1.0f, 1.0f));
-	drawLine(vec2(-0.25f, -0.25f), vec2(0.25f, -0.25f));
-	drawLine(vec2(0.25f, -0.25f), vec2(0.25f, 0.25f));
-	drawLine(vec2(0.25f, 0.25f), vec2(-0.25f, 0.25f));
-	drawLine(vec2(-0.25f, 0.25f), vec2(-0.25f, -0.25f));
-
 	// Draw cube:
 	setLineColour(vec3(0.0f, 0.0f, 0.0f));
 	for(int i=0;i<8;i++){
-		//tempArray[i] = transModMat * rotateModMat * scaleModMat * cubeArray[i];
 		tempArray[i] = cubeArray[i];
 	}
 
@@ -277,6 +266,13 @@ void A2::appLogic()
 	drawLine(tempArray[0],tempArray[4]);
 	drawLine(tempArray[3],tempArray[7]);
 	drawLine(tempArray[2],tempArray[6]);
+
+	setLineColour(vec3(1.0f, 0.0f, 0.0f));
+	drawLine(modelGnomonArray[0],modelGnomonArray[3]);
+	setLineColour(vec3(0.0f, 1.0f, 0.0f));
+	drawLine(modelGnomonArray[1],modelGnomonArray[3]);
+	setLineColour(vec3(0.0f, 0.0f, 1.0f));
+	drawLine(modelGnomonArray[2],modelGnomonArray[3]);
 }
 
 //----------------------------------------------------------------------------------------
@@ -302,7 +298,7 @@ void A2::guiLogic()
 		if( ImGui::Button( "Quit Application" ) ) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
-		if( ImGui::Button( "ResetValues" ) ) {
+		if( ImGui::Button( "Reset Values" ) ) {
 			resetValues();
 		}
 
@@ -390,13 +386,28 @@ void A2::cleanup()
  */
 void A2::resetValues()
 {
-	interactionModes[0] = new RotateViewInteraction();
-	interactionModes[1] = new TranslateViewInteraction();
-	interactionModes[2] = new PerspectiveInteraction();
-	interactionModes[3] = new RotateModelInteraction();
-	interactionModes[4] = new TranslateModelInteraction();
-	interactionModes[5] = new ScaleModelInteraction();
-	interactionModes[6] = new ViewportInteraction();
+	// Setup Cube Coordinates
+	cubeArray[ 0 ] = vec4( -1.0f, 1.0f, 1.0f, 0.0f );	// Front, top, left
+	cubeArray[ 1 ] = vec4( 1.0f, 1.0f, 1.0f, 0.0f );	// Front, top, right
+	cubeArray[ 2 ] = vec4( 1.0f, 1.0f, -1.0f, 0.0f );	// Back, top, right
+	cubeArray[ 3 ] = vec4( -1.0f, 1.0f, -1.0f, 0.0f );	// Back, top, left
+	cubeArray[ 4 ] = vec4( -1.0f, -1.0f, 1.0f, 0.0f );	// Front, bottom, left
+	cubeArray[ 5 ] = vec4( 1.0f, -1.0f, 1.0f, 0.0f );	// Front, bottom, right
+	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, right
+	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, left
+
+	modelGnomonArray[ 0 ] = vec4( 1.0f, 0.0f, 0.0f, 0.0f );
+	modelGnomonArray[ 1 ] = vec4( 0.0f , 1.0f, 0.0f, 0.0f );
+	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 0.0f );
+	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.0f, 0.0f , 1.0f );	// The origin
+
+	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray);
+	interactionModes[1] = new TranslateViewInteraction(modelGnomonArray, cubeArray);
+	interactionModes[2] = new PerspectiveInteraction(modelGnomonArray, cubeArray);
+	interactionModes[3] = new RotateModelInteraction(modelGnomonArray, cubeArray);
+	interactionModes[4] = new TranslateModelInteraction(modelGnomonArray, cubeArray);
+	interactionModes[5] = new ScaleModelInteraction(modelGnomonArray, cubeArray);
+	interactionModes[6] = new ViewportInteraction(modelGnomonArray, cubeArray);
 
 	currentMode = ROTATE_VIEW;
 	currentInteraction = interactionModes[currentMode];
