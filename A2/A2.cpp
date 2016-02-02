@@ -70,6 +70,20 @@ void A2::init()
 	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, right
 	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, left
 
+	interactionModes[0] = new RotateViewInteraction();
+	interactionModes[1] = new TranslateViewInteraction();
+	interactionModes[2] = new PerspectiveInteraction();
+	interactionModes[3] = new RotateModelInteraction();
+	interactionModes[4] = new TranslateModelInteraction();
+	interactionModes[5] = new ScaleModelInteraction();
+	interactionModes[6] = new ViewportInteraction();
+
+	currentMode = ROTATE_VIEW;
+	currentInteraction = interactionModes[currentMode];
+
+	currentMouseButton = -1;
+
+	previousMouseXPos = 0;
 }
 
 //----------------------------------------------------------------------------------------
@@ -193,6 +207,30 @@ void A2::drawLine(
 	m_vertexData.numVertices += 2;
 }
 
+//---------------------------------------------------------------------------------------
+// Overloaded with vec3
+// Only uses the first 2 coordinates
+//---------------------------------------------------------------------------------------
+void A2::drawLine(
+		const glm::vec3 & v0,   // Line Start (NDC coordinate)
+		const glm::vec3 & v1    // Line End (NDC coordinate)
+) {
+	drawLine(vec2(v0[0],v0[1]),vec2(v1[0],v1[1]));
+}
+
+//---------------------------------------------------------------------------------------
+// Overloaded with vec4
+// Only uses the first 2 coordinates
+//---------------------------------------------------------------------------------------
+void A2::drawLine(
+		const glm::vec4 & v0,   // Line Start (NDC coordinate)
+		const glm::vec4 & v1    // Line End (NDC coordinate)
+) {
+	drawLine(vec2(v0[0],v0[1]),vec2(v1[0],v1[1]));
+}
+
+vec4 tempArray[8];
+
 //----------------------------------------------------------------------------------------
 /*
  * Called once per frame, before guiLogic().
@@ -221,19 +259,22 @@ void A2::appLogic()
 
 	// Draw cube:
 	setLineColour(vec3(0.0f, 0.0f, 0.0f));
+	for(int i=0;i<8;i++){
+		//tempArray[i] = transModMat * rotateModMat * scaleModMat * cubeArray[i];
+		tempArray[i] = cubeArray[i];
+	}
 
-	// matrix to select x and y only
-	glm::mat4 abc = mat4(
-		vec4(1.0f, 0.0f, 0.0f, 0.0f),
-		vec4(0.0f, 1.0f, 0.0f, 0.0f),
-		vec4(0.0f, 0.0f, 0.0f, 0.0f),
-		vec4(0.0f, 0.0f, 0.0f, 0.0f)
-	);
-
-	vec4 first = abc*cubeArray[0];
-	vec4 second = abc*cubeArray[5];
-	drawLine(vec2(first[0],first[1]), vec2(second[0],second[1]));
-
+	drawLine(tempArray[0],tempArray[1]);
+	drawLine(tempArray[1],tempArray[2]);
+	drawLine(tempArray[2],tempArray[3]);
+	drawLine(tempArray[3],tempArray[0]);
+	drawLine(tempArray[4],tempArray[5]);
+	drawLine(tempArray[5],tempArray[6]);
+	drawLine(tempArray[6],tempArray[7]);
+	drawLine(tempArray[7],tempArray[0]);
+	drawLine(tempArray[0],tempArray[4]);
+	drawLine(tempArray[3],tempArray[7]);
+	drawLine(tempArray[2],tempArray[6]);
 }
 
 //----------------------------------------------------------------------------------------
@@ -256,13 +297,32 @@ void A2::guiLogic()
 			windowFlags);
 
 
-		// Add more gui elements here here ...
-
-
-		// Create Button, and check if it was clicked:
 		if( ImGui::Button( "Quit Application" ) ) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 		}
+		if( ImGui::Button( "ResetValues" ) ) {
+			resetValues();
+		}
+
+
+		if( ImGui::RadioButton( "Rotate View", &currentMode, ROTATE_VIEW ) ) {
+		}
+		if( ImGui::RadioButton( "Translate View", &currentMode, TRANSLATE_VIEW ) ) {
+		}
+		if( ImGui::RadioButton( "Perspective", &currentMode, PERSPECTIVE ) ) {
+		}
+		if( ImGui::RadioButton( "Rotate Model", &currentMode, ROTATE_MODEL ) ) {
+		}
+		if( ImGui::RadioButton( "Translate Model", &currentMode, TRANSLATE_MODEL ) ) {
+		}
+		if( ImGui::RadioButton( "Scale Model", &currentMode, SCALE_MODEL ) ) {
+		}
+		if( ImGui::RadioButton( "Viewport", &currentMode, VIEWPORT ) ) {
+		}
+
+		currentInteraction = interactionModes[ currentMode ];
+
+
 
 		ImGui::Text( "Framerate: %.1f FPS", ImGui::GetIO().Framerate );
 
@@ -324,6 +384,26 @@ void A2::cleanup()
 
 //----------------------------------------------------------------------------------------
 /*
+ * Resets working variables to their original state
+ */
+void A2::resetValues()
+{
+	interactionModes[0] = new RotateViewInteraction();
+	interactionModes[1] = new TranslateViewInteraction();
+	interactionModes[2] = new PerspectiveInteraction();
+	interactionModes[3] = new RotateModelInteraction();
+	interactionModes[4] = new TranslateModelInteraction();
+	interactionModes[5] = new ScaleModelInteraction();
+	interactionModes[6] = new ViewportInteraction();
+
+	currentMode = ROTATE_VIEW;
+	currentInteraction = interactionModes[currentMode];
+
+	currentMouseButton = -1;
+}
+
+//----------------------------------------------------------------------------------------
+/*
  * Event handler.  Handles cursor entering the window area events.
  */
 bool A2::cursorEnterWindowEvent (
@@ -346,7 +426,24 @@ bool A2::mouseMoveEvent (
 ) {
 	bool eventHandled(false);
 
-	// Fill in with event handling code...
+	if( currentMouseButton != -1 ){
+		double xDiff = xPos - previousMouseXPos;
+
+		if( currentMouseButton==GLFW_MOUSE_BUTTON_LEFT )
+		{
+			currentInteraction->left(xDiff);
+		}
+		else if( currentMouseButton==GLFW_MOUSE_BUTTON_MIDDLE )
+		{
+			currentInteraction->centre(xDiff);
+		}
+		else if( currentMouseButton==GLFW_MOUSE_BUTTON_RIGHT )
+		{
+			currentInteraction->right(xDiff);
+		}
+	}
+
+	previousMouseXPos = xPos;
 
 	return eventHandled;
 }
@@ -360,9 +457,37 @@ bool A2::mouseButtonInputEvent (
 		int actions,
 		int mods
 ) {
+	/*
+	if( button==GLFW_MOUSE_BUTTON_LEFT )
+	{
+
+	}
+	else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
+	{
+		cout<<"middle button"<<endl;
+	}
+	else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+	{
+		cout<<"right button"<<endl;
+	}
+	*/
 	bool eventHandled(false);
 
-	// Fill in with event handling code...
+	//TODO: explain that you are avoiding the multiple click scenario
+	if (currentMouseButton == -1 && actions == GLFW_PRESS) {
+		if (!ImGui::IsMouseHoveringAnyWindow()) {
+			currentMouseButton = button;
+			cout<<"Pressed "<<currentMouseButton<<endl;
+			eventHandled = true;
+		}
+
+
+	}
+	if (currentMouseButton == button && actions == GLFW_RELEASE) {
+		cout<<"Released "<<currentMouseButton<<endl;
+		currentMouseButton = -1;
+		eventHandled = true;
+	}
 
 	return eventHandled;
 }
@@ -415,6 +540,56 @@ bool A2::keyInputEvent (
 		if ( key == GLFW_KEY_Q ) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
 			eventHandled = true;
+		}
+
+		// Resetting values
+		if ( key == GLFW_KEY_A ) {
+			resetValues();
+			eventHandled = true;
+		}
+
+		// Changed interaction mode
+		bool changedMode = false;
+
+		// Keyboard shortcuts corresponding to interaction modes
+		if ( key == GLFW_KEY_O ) {
+			changedMode = true;
+			currentMode = ROTATE_VIEW;
+			eventHandled = true;
+		}
+		if ( key == GLFW_KEY_N ) {
+			changedMode = true;
+			currentMode = TRANSLATE_VIEW;
+			eventHandled = true;
+		}
+		if ( key == GLFW_KEY_P ) {
+			changedMode = true;
+			currentMode = PERSPECTIVE;
+			eventHandled = true;
+		}
+		if ( key == GLFW_KEY_R ) {
+			changedMode = true;
+			currentMode = ROTATE_MODEL;
+			eventHandled = true;
+		}
+		if ( key == GLFW_KEY_T ) {
+			changedMode = true;
+			currentMode = TRANSLATE_MODEL;
+			eventHandled = true;
+		}
+		if ( key == GLFW_KEY_S ) {
+			changedMode = true;
+			currentMode = SCALE_MODEL;
+			eventHandled = true;
+		}
+		if ( key == GLFW_KEY_V ) {
+			changedMode = true;
+			currentMode = VIEWPORT;
+			eventHandled = true;
+		}
+
+		if(changedMode){
+			currentInteraction = interactionModes[currentMode];
 		}
 	}
 

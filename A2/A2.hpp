@@ -6,12 +6,14 @@
 
 #include <glm/glm.hpp>
 
+#include "Interactions.hpp"
+
+
 #include <vector>
 
 // Set a global maximum number of vertices in order to pre-allocate VBO data
 // in one shot, rather than reallocating each frame.
 const GLsizei kMaxVertices = 1000;
-
 
 // Convenience class for storing vertex data in CPU memory.
 // Data should be copied over to GPU memory via VBO storage before rendering.
@@ -24,7 +26,6 @@ public:
 	GLuint index;
 	GLsizei numVertices;
 };
-
 
 class A2 : public CS488Window {
 public:
@@ -59,6 +60,14 @@ protected:
 			const glm::vec2 & v0,
 			const glm::vec2 & v1
 	);
+	void drawLine (
+			const glm::vec3 & v0,
+			const glm::vec3 & v1
+	);
+	void drawLine (
+			const glm::vec4 & v0,
+			const glm::vec4 & v1
+	);
 
 	ShaderProgram m_shader;
 
@@ -71,5 +80,16 @@ protected:
 	glm::vec3 m_currentLineColour;
 
 	glm::vec4 cubeArray[8];
+
+	int currentMode;
+	Interaction *currentInteraction;
+
+	Interaction *interactionModes[7];
+
+	void resetValues();
+
+	int currentMouseButton;
+
+	double previousMouseXPos;
 
 };
