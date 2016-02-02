@@ -22,7 +22,7 @@ enum Mode { ROTATE_VIEW, TRANSLATE_VIEW, PERSPECTIVE, ROTATE_MODEL,
 
 class Interaction {
 public:
-	Interaction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[]);
+	Interaction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[], glm::mat4 &cumulMod);
 	~Interaction(){}
 	virtual void left( float value );
   virtual void centre( float value );
@@ -58,12 +58,18 @@ protected:
   static float scaleY;
   static float scaleZ;
 
+  static glm::mat4 M;
+
+  static glm::mat4 cumulativeModelTR;
+  glm::mat4 &cumulativeModel;
+
+
 };
 
 class RotateViewInteraction : public Interaction {
 
 public:
-  RotateViewInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[]);
+  RotateViewInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[], glm::mat4 &cumulMod);
 	void left( float value );
   void centre( float value );
   void right( float value );
@@ -72,7 +78,7 @@ public:
 
 class TranslateViewInteraction : public Interaction {
 public:
-  TranslateViewInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[]);
+  TranslateViewInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[], glm::mat4 &cumulMod);
 	void left( float value );
   void centre( float value );
   void right( float value );
@@ -80,7 +86,7 @@ public:
 
 class PerspectiveInteraction : public Interaction {
 public:
-  PerspectiveInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[]);
+  PerspectiveInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[], glm::mat4 &cumulMod);
 	void left( float value );
   void centre( float value );
   void right( float value );
@@ -88,7 +94,7 @@ public:
 
 class RotateModelInteraction : public Interaction {
 public:
-  RotateModelInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[]);
+  RotateModelInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[], glm::mat4 &cumulMod);
 	void left( float value );
   void centre( float value );
   void right( float value );
@@ -100,7 +106,7 @@ private:
 
 class TranslateModelInteraction : public Interaction {
 public:
-  TranslateModelInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[]);
+  TranslateModelInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[], glm::mat4 &cumulMod);
 	void left( float value );
   void centre( float value );
   void right( float value );
@@ -108,7 +114,7 @@ public:
 
 class ScaleModelInteraction : public Interaction {
 public:
-  ScaleModelInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[]);
+  ScaleModelInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[], glm::mat4 &cumulMod);
 	void left( float value );
   void centre( float value );
   void right( float value );
@@ -116,7 +122,7 @@ public:
 
 class ViewportInteraction : public Interaction {
 public:
-  ViewportInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[]);
+  ViewportInteraction(glm::vec4 modelGnomonArray[], glm::vec4 cubeArray[], glm::mat4 &cumulMod);
 	void left( float value );
   void centre( float value );
   void right( float value );

@@ -4,13 +4,24 @@
 #include <iostream>
 using namespace std;
 
-Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ) {
+mat4 Interaction::M;
+mat4 Interaction::cumulativeModelTR;
+glm::mat4 abc = mat4(1.0f);
+float Interaction::scaleX;
+float Interaction::scaleY;
+float Interaction::scaleZ;
+
+Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ) : cumulativeModel(cumulMod) {
+
   modelGnomonArray = modGnoArr;
   cubeArray = cubeArr;
+
+  cumulativeModelTR = mat4(1.0f);
+  scaleX = 0.0f;
+  scaleY = 0.0f;
+  scaleZ = 0.0f;
 }
-float Interaction::scaleX = 0.0f;
-float Interaction::scaleY = 0.0f;
-float Interaction::scaleZ = 0.0f;
+
 
 void Interaction::applyResultMatrix(mat4 result){
   for(int i=0;i<8;i++) {
@@ -112,7 +123,7 @@ void Interaction::right( float value ){
 }
 
 
-RotateViewInteraction::RotateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ):Interaction(modGnoArr,cubeArr){}
+RotateViewInteraction::RotateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void RotateViewInteraction::left( float value ){
   cout<<"RotateViewInteraction left "<<value<<endl;
 }
@@ -123,7 +134,7 @@ void RotateViewInteraction::right( float value ){
   cout<<"RotateViewInteraction right "<<value<<endl;
 }
 
-TranslateViewInteraction::TranslateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ):Interaction(modGnoArr,cubeArr){}
+TranslateViewInteraction::TranslateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void TranslateViewInteraction::left( float value ){
   cout<<"TranslateViewInteraction left "<<value<<endl;
 }
@@ -134,7 +145,7 @@ void TranslateViewInteraction::right( float value ){
   cout<<"TranslateViewInteraction right "<<value<<endl;
 }
 
-PerspectiveInteraction::PerspectiveInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ):Interaction(modGnoArr,cubeArr){}
+PerspectiveInteraction::PerspectiveInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void PerspectiveInteraction::left( float value ){
   cout<<"PerspectiveInteraction left "<<value<<endl;
 }
@@ -145,167 +156,66 @@ void PerspectiveInteraction::right( float value ){
   cout<<"PerspectiveInteraction right "<<value<<endl;
 }
 
-RotateModelInteraction::RotateModelInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ):Interaction(modGnoArr,cubeArr){}
+RotateModelInteraction::RotateModelInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void RotateModelInteraction::left( float value ){
-  cout<<"RotateModelInteraction left "<<value<<endl;
-
-  //printMatrix(scaleMatrix,"scaleMatrix");
-  //printMatrix(cobWorldToModel,"cobWorldToModel");
-  //printMatrix(cobModelToWorld,"cobModelToWorld");
-  //printMatrix(cobModelToWorld*cobModelToWorld,"Together");
-
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  mat4 rotateMatrix = glm::rotate(mat4(1.0f), value*0.001f,vec3(1.0f,0.0f,0.0f));
+  cumulativeModelTR = cumulativeModelTR * rotateMatrix;
+  cumulativeModel = cumulativeModelTR * scaleMatrix;
 }
 void RotateModelInteraction::centre( float value ){
-  cout<<"RotateModelInteraction centre "<<value<<endl;
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  mat4 rotateMatrix = glm::rotate(mat4(1.0f), value*0.001f,vec3(0.0f,1.0f,0.0f));
+  cumulativeModelTR = cumulativeModelTR * rotateMatrix;
+  cumulativeModel = cumulativeModelTR * scaleMatrix;
 }
 void RotateModelInteraction::right( float value ){
-  cout<<"RotateModelInteraction right "<<value<<endl;
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  mat4 rotateMatrix = glm::rotate(mat4(1.0f), value*0.001f,vec3(0.0f,0.0f,1.0f));
+  cumulativeModelTR = cumulativeModelTR * rotateMatrix;
+  cumulativeModel = cumulativeModelTR * scaleMatrix;
 }
 
-TranslateModelInteraction::TranslateModelInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ):Interaction(modGnoArr,cubeArr){}
+TranslateModelInteraction::TranslateModelInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void TranslateModelInteraction::left( float value ){
-  /*
-  //cout<<"TranslateModelInteraction left "<<value<<endl;
-  mat4 cobModelToWorld = getCOBModelToWorld();
-
-
   mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
-  mat4 translateMatrix = translate(mat4(1.0f),vec3(value*0.01,0.0f,0.0f));
-
-  printMatrix(translateMatrix,"translateMatrix");
-
-  mat4 result = cobModelToWorld * translateMatrix * scaleMatrix;
-
-  for(int i=0;i<8;i++){
-    cubeArray[i] = originalCubeArray[i];
-  }
-
-  printVecArray(cubeArray,8,"before resultof cubeArray");
-  applyMatrix(result,cubeArray,8);
-
-  printVecArray(cubeArray,8,"resultof cubeArray");
-  //applyMatrix(cobModelToWorld*translateMatrix,modelGnomonArray,4);
-  applyMatrix(translateMatrix,modelGnomonArray,4);*/
-  mat4 cobModelToWorld = getCOBModelToWorld();
-  ///////////////mat4 cobWorldToModel = getCOBWorldToModel();
-  mat4 cobWorldToModel = inverse(cobModelToWorld);
-
-  // Update scale
-
-
-  //mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
-
   mat4 translateMatrix = translate(mat4(1.0f),vec3(value*0.001,0.0f,0.0f));
-  /*
-  mat4 translateMatrix = mat4(
-    vec4(1,0,0,value*0.001),
-    vec4(0,1,0,0),
-    vec4(0,0,1,0),
-    vec4(0,0,0,1)
-  );
-  */
-
-  //scaleX = scaleX + value*0.001;
-
-  mat4 result = cobModelToWorld * translateMatrix * cobWorldToModel;
-
-  /*
-  for(int i=0;i<8;i++){
-    cubeArray[i] = originalCubeArray[i];
-  }
-  */
-
-  applyMatrix(result,cubeArray,8);
-  applyMatrix(result,modelGnomonArray,4);
-
-  printMatrix(result,"result");
-  printMatrix(translateMatrix,"translateMatrix");
-
-  printVecArray(cubeArray,8,"cubeArray");
-  printVecArray(modelGnomonArray,4,"modelGnomonArray");
-  printVecArray(worldFrame,4,"worldFrame");
-
-  //printMatrix(cobWorldToModel,"cobWorldToModel");
-  //printMatrix(cobModelToWorld*cobWorldToModel,"combined");
+  cumulativeModelTR = cumulativeModelTR * translateMatrix;
+  cumulativeModel = cumulativeModelTR * scaleMatrix;
 }
 void TranslateModelInteraction::centre( float value ){
-  cout<<"TranslateModelInteraction centre "<<value<<endl;
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  mat4 translateMatrix = translate(mat4(1.0f),vec3(0.0f,value*0.001,0.0f));
+  cumulativeModelTR = cumulativeModelTR * translateMatrix;
+  cumulativeModel = cumulativeModelTR * scaleMatrix;
 }
 void TranslateModelInteraction::right( float value ){
-  cout<<"TranslateModelInteraction right "<<value<<endl;
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  mat4 translateMatrix = translate(mat4(1.0f),vec3(0.0f,0.0f,value*0.001));
+  cumulativeModelTR = cumulativeModelTR * translateMatrix;
+  cumulativeModel = cumulativeModelTR * scaleMatrix;
 }
 
 
 
-ScaleModelInteraction::ScaleModelInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ):Interaction(modGnoArr,cubeArr){}
+ScaleModelInteraction::ScaleModelInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void ScaleModelInteraction::left( float value ){
-  mat4 cobModelToWorld = getCOBModelToWorld();
-  mat4 cobWorldToModel = getCOBWorldToModel();
-
-  // Update scale
-
-
-  //mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
-  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,value*0.001),1.0f,1.0f));
-
-  //scaleX = scaleX + value*0.001;
-
-  mat4 result = cobModelToWorld * scaleMatrix * cobWorldToModel;
-
-  /*
-  for(int i=0;i<8;i++){
-    cubeArray[i] = originalCubeArray[i];
-  }
-  */
-
-  applyMatrix(result,cubeArray,8);
+  scaleX += value * 0.001;
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  cumulativeModel = cumulativeModelTR * scaleMatrix;
 }
 void ScaleModelInteraction::centre( float value ){
-  mat4 cobModelToWorld = getCOBModelToWorld();
-  mat4 cobWorldToModel = getCOBWorldToModel();
-
-  // Update scale
-
-
-  //mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
-  mat4 scaleMatrix = scale(mat4(1.0f),vec3(1.0f,pow(10.0f,value*0.001),1.0f));
-
-  //scaleX = scaleX + value*0.001;
-
-  mat4 result = cobModelToWorld * scaleMatrix * cobWorldToModel;
-
-  /*
-  for(int i=0;i<8;i++){
-    cubeArray[i] = originalCubeArray[i];
-  }
-  */
-
-  applyMatrix(result,cubeArray,8);
+  scaleY += value * 0.001;
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  cumulativeModel = cumulativeModelTR * scaleMatrix;
 }
 void ScaleModelInteraction::right( float value ){
-  mat4 cobModelToWorld = getCOBModelToWorld();
-  mat4 cobWorldToModel = getCOBWorldToModel();
-
-  // Update scale
-
-
-  //mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
-  mat4 scaleMatrix = scale(mat4(1.0f),vec3(1.0f,1.0f,pow(10.0f,value*0.001)));
-
-  //scaleX = scaleX + value*0.001;
-
-  mat4 result = cobModelToWorld * scaleMatrix * cobWorldToModel;
-
-  /*
-  for(int i=0;i<8;i++){
-    cubeArray[i] = originalCubeArray[i];
-  }
-  */
-
-  applyMatrix(result,cubeArray,8);
+  scaleZ += value * 0.001;
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  cumulativeModel = cumulativeModelTR * scaleMatrix;
 }
 
-ViewportInteraction::ViewportInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ):Interaction(modGnoArr,cubeArr){}
+ViewportInteraction::ViewportInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void ViewportInteraction::left( float value ){
   cout<<"ViewportInteraction left "<<value<<endl;
 }

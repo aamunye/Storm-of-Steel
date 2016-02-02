@@ -254,7 +254,7 @@ void A2::appLogic()
 	// Draw cube:
 	setLineColour(vec3(0.0f, 0.0f, 0.0f));
 	for(int i=0;i<8;i++){
-		tempArray[i] = cubeArray[i];
+		tempArray[i] = cumulativeModel * cubeArray[i];
 	}
 
 	drawLine(tempArray[0],tempArray[1]);
@@ -264,7 +264,8 @@ void A2::appLogic()
 	drawLine(tempArray[4],tempArray[5]);
 	drawLine(tempArray[5],tempArray[6]);
 	drawLine(tempArray[6],tempArray[7]);
-	drawLine(tempArray[7],tempArray[0]);
+	drawLine(tempArray[7],tempArray[4]);
+	drawLine(tempArray[1],tempArray[5]);
 	drawLine(tempArray[0],tempArray[4]);
 	drawLine(tempArray[3],tempArray[7]);
 	drawLine(tempArray[2],tempArray[6]);
@@ -402,6 +403,8 @@ void A2::resetValues()
 	modelGnomonArray[ 1 ] = vec4( 0.0f , 1.0f, 0.0f, 1.0f );
 	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 1.0f );
 	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.0f, 0.0f , 1.0f );	// The origin
+
+	cumulativeModel = mat4(1.0);
 
 	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
 	interactionModes[1] = new TranslateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
