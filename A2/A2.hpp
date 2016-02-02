@@ -82,6 +82,8 @@ protected:
 	glm::vec4 cubeArray[8];
 	glm::vec4 modelGnomonArray[4];
 
+	glm::mat4 cumulativeModel;
+
 	int currentMode;
 	Interaction *currentInteraction;
 

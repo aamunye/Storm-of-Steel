@@ -75,13 +75,15 @@ void A2::init()
 	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 1.0f );
 	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.0f, 0.0f , 1.0f );	// The origin
 
-	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray);
-	interactionModes[1] = new TranslateViewInteraction(modelGnomonArray, cubeArray);
-	interactionModes[2] = new PerspectiveInteraction(modelGnomonArray, cubeArray);
-	interactionModes[3] = new RotateModelInteraction(modelGnomonArray, cubeArray);
-	interactionModes[4] = new TranslateModelInteraction(modelGnomonArray, cubeArray);
-	interactionModes[5] = new ScaleModelInteraction(modelGnomonArray, cubeArray);
-	interactionModes[6] = new ViewportInteraction(modelGnomonArray, cubeArray);
+	cumulativeModel = mat4(1.0);
+
+	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[1] = new TranslateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[2] = new PerspectiveInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[3] = new RotateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[4] = new TranslateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[5] = new ScaleModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[6] = new ViewportInteraction(modelGnomonArray, cubeArray, cumulativeModel);
 
 	currentMode = ROTATE_VIEW;
 	currentInteraction = interactionModes[currentMode];
@@ -401,13 +403,13 @@ void A2::resetValues()
 	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 1.0f );
 	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.0f, 0.0f , 1.0f );	// The origin
 
-	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray);
-	interactionModes[1] = new TranslateViewInteraction(modelGnomonArray, cubeArray);
-	interactionModes[2] = new PerspectiveInteraction(modelGnomonArray, cubeArray);
-	interactionModes[3] = new RotateModelInteraction(modelGnomonArray, cubeArray);
-	interactionModes[4] = new TranslateModelInteraction(modelGnomonArray, cubeArray);
-	interactionModes[5] = new ScaleModelInteraction(modelGnomonArray, cubeArray);
-	interactionModes[6] = new ViewportInteraction(modelGnomonArray, cubeArray);
+	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[1] = new TranslateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[2] = new PerspectiveInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[3] = new RotateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[4] = new TranslateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[5] = new ScaleModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[6] = new ViewportInteraction(modelGnomonArray, cubeArray, cumulativeModel);
 
 	currentMode = ROTATE_VIEW;
 	currentInteraction = interactionModes[currentMode];
