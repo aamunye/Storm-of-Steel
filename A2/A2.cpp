@@ -81,7 +81,9 @@ void A2::init()
 	currentMode = ROTATE_VIEW;
 	currentInteraction = interactionModes[currentMode];
 
-	currentMouseButton = -1;
+	leftButtonPressed = false;
+	centreButtonPressed = false;
+	rightButtonPressed = false;
 
 	previousMouseXPos = 0;
 }
@@ -399,7 +401,9 @@ void A2::resetValues()
 	currentMode = ROTATE_VIEW;
 	currentInteraction = interactionModes[currentMode];
 
-	currentMouseButton = -1;
+	leftButtonPressed = false;
+	centreButtonPressed = false;
+	rightButtonPressed = false;
 }
 
 //----------------------------------------------------------------------------------------
@@ -425,23 +429,21 @@ bool A2::mouseMoveEvent (
 		double yPos
 ) {
 	bool eventHandled(false);
+	double xDiff = xPos - previousMouseXPos;
 
-	if( currentMouseButton != -1 ){
-		double xDiff = xPos - previousMouseXPos;
-
-		if( currentMouseButton==GLFW_MOUSE_BUTTON_LEFT )
-		{
-			currentInteraction->left(xDiff);
-		}
-		else if( currentMouseButton==GLFW_MOUSE_BUTTON_MIDDLE )
-		{
-			currentInteraction->centre(xDiff);
-		}
-		else if( currentMouseButton==GLFW_MOUSE_BUTTON_RIGHT )
-		{
-			currentInteraction->right(xDiff);
-		}
+	if( leftButtonPressed ){
+		currentInteraction->left(xDiff);
+		eventHandled = true;
 	}
+	if( centreButtonPressed ){
+		currentInteraction->centre(xDiff);
+		eventHandled = true;
+	}
+	if( rightButtonPressed ){
+		currentInteraction->right(xDiff);
+		eventHandled = true;
+	}
+
 
 	previousMouseXPos = xPos;
 
@@ -457,36 +459,44 @@ bool A2::mouseButtonInputEvent (
 		int actions,
 		int mods
 ) {
-	/*
-	if( button==GLFW_MOUSE_BUTTON_LEFT )
-	{
-
-	}
-	else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
-	{
-		cout<<"middle button"<<endl;
-	}
-	else if( button==GLFW_MOUSE_BUTTON_RIGHT )
-	{
-		cout<<"right button"<<endl;
-	}
-	*/
 	bool eventHandled(false);
 
-	//TODO: explain that you are avoiding the multiple click scenario
-	if (currentMouseButton == -1 && actions == GLFW_PRESS) {
+	if (actions == GLFW_PRESS) {
 		if (!ImGui::IsMouseHoveringAnyWindow()) {
-			currentMouseButton = button;
-			cout<<"Pressed "<<currentMouseButton<<endl;
-			eventHandled = true;
+			if( button==GLFW_MOUSE_BUTTON_LEFT )
+			{
+				leftButtonPressed = true;
+				eventHandled = true;
+			}
+			else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
+			{
+				centreButtonPressed = true;
+				eventHandled = true;
+			}
+			else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+			{
+				rightButtonPressed = true;
+				eventHandled = true;
+			}
 		}
 
-
 	}
-	if (currentMouseButton == button && actions == GLFW_RELEASE) {
-		cout<<"Released "<<currentMouseButton<<endl;
-		currentMouseButton = -1;
-		eventHandled = true;
+	if (actions == GLFW_RELEASE) {
+		if( button==GLFW_MOUSE_BUTTON_LEFT )
+		{
+			leftButtonPressed = false;
+			eventHandled = true;
+		}
+		else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
+		{
+			centreButtonPressed = false;
+			eventHandled = true;
+		}
+		else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+		{
+			rightButtonPressed = false;
+			eventHandled = true;
+		}
 	}
 
 	return eventHandled;

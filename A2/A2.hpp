@@ -88,7 +88,9 @@ protected:
 
 	void resetValues();
 
-	int currentMouseButton;
+	bool leftButtonPressed;
+	bool centreButtonPressed;
+	bool rightButtonPressed;
 
 	double previousMouseXPos;
 
