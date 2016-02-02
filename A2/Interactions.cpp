@@ -35,6 +35,17 @@ void Interaction::printVecArray(glm::vec4 mat[],int length,string s) {
   }
   cout<<"------------------"<<endl<<endl;
 }
+void Interaction::printMatrix(glm::mat4 mat,string s) {
+  cout<<"---------"<<s<<"---------"<<endl;
+  for(int i=0;i<4;i++){
+    for(int j=0;j<4;j++){
+      cout<<mat[i][j]<<" ";
+    }
+    cout<<endl;
+  }
+  cout<<"------------------"<<endl<<endl;
+}
+/*
 glm::mat4 Interaction::getCOBModelToWorld(){
   glm::mat4 result = glm::mat4();
   for(int i=0;i<3;i++){
@@ -59,6 +70,37 @@ glm::mat4 Interaction::getCOBWorldToModel(){
   }
   return result;
 }
+*/
+glm::mat4 Interaction::getCOBModelToWorld(){
+  glm::mat4 result = glm::mat4();
+  for(int i=0;i<3;i++){
+    for(int j=0;j<3;j++){
+      //result[i][j] = dot((modelGnomonArray[j]-modelGnomonArray[3]),worldFrame[i])/dot(worldFrame[i],worldFrame[i]);
+      result[i][j] = dot((modelGnomonArray[j]-modelGnomonArray[3]),worldFrame[i]);
+    }
+  }
+  for(int i = 0;i<3;i++){
+    //result[i][3] = dot(modelGnomonArray[3]-worldFrame[3],worldFrame[i])/dot(worldFrame[i],worldFrame[i]);
+    result[i][3] = dot(modelGnomonArray[3]-worldFrame[3],worldFrame[i]);
+  }
+  return result;
+}
+glm::mat4 Interaction::getCOBWorldToModel(){
+  glm::mat4 result = glm::mat4();
+  for(int i=0;i<3;i++){
+    for(int j=0;j<3;j++){
+      result[i][j] = dot(worldFrame[j],(modelGnomonArray[i]-modelGnomonArray[3]))/dot((modelGnomonArray[i]-modelGnomonArray[3]),(modelGnomonArray[i]-modelGnomonArray[3]));
+    }
+  }
+  for(int i = 0;i<3;i++){
+    result[i][3] =
+    dot(
+      worldFrame[3]-modelGnomonArray[3],
+      (modelGnomonArray[i]-modelGnomonArray[3]))/dot((modelGnomonArray[i]-modelGnomonArray[3]),(modelGnomonArray[i]-modelGnomonArray[3]));
+  }
+  return result;
+}
+
 void Interaction::left( float value ){
   cout<<"Interaction left "<<value<<endl;
 }
@@ -122,7 +164,69 @@ void RotateModelInteraction::right( float value ){
 
 TranslateModelInteraction::TranslateModelInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ):Interaction(modGnoArr,cubeArr){}
 void TranslateModelInteraction::left( float value ){
-  cout<<"TranslateModelInteraction left "<<value<<endl;
+  /*
+  //cout<<"TranslateModelInteraction left "<<value<<endl;
+  mat4 cobModelToWorld = getCOBModelToWorld();
+
+
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  mat4 translateMatrix = translate(mat4(1.0f),vec3(value*0.01,0.0f,0.0f));
+
+  printMatrix(translateMatrix,"translateMatrix");
+
+  mat4 result = cobModelToWorld * translateMatrix * scaleMatrix;
+
+  for(int i=0;i<8;i++){
+    cubeArray[i] = originalCubeArray[i];
+  }
+
+  printVecArray(cubeArray,8,"before resultof cubeArray");
+  applyMatrix(result,cubeArray,8);
+
+  printVecArray(cubeArray,8,"resultof cubeArray");
+  //applyMatrix(cobModelToWorld*translateMatrix,modelGnomonArray,4);
+  applyMatrix(translateMatrix,modelGnomonArray,4);*/
+  mat4 cobModelToWorld = getCOBModelToWorld();
+  ///////////////mat4 cobWorldToModel = getCOBWorldToModel();
+  mat4 cobWorldToModel = inverse(cobModelToWorld);
+
+  // Update scale
+
+
+  //mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+
+  mat4 translateMatrix = translate(mat4(1.0f),vec3(value*0.001,0.0f,0.0f));
+  /*
+  mat4 translateMatrix = mat4(
+    vec4(1,0,0,value*0.001),
+    vec4(0,1,0,0),
+    vec4(0,0,1,0),
+    vec4(0,0,0,1)
+  );
+  */
+
+  //scaleX = scaleX + value*0.001;
+
+  mat4 result = cobModelToWorld * translateMatrix * cobWorldToModel;
+
+  /*
+  for(int i=0;i<8;i++){
+    cubeArray[i] = originalCubeArray[i];
+  }
+  */
+
+  applyMatrix(result,cubeArray,8);
+  applyMatrix(result,modelGnomonArray,4);
+
+  printMatrix(result,"result");
+  printMatrix(translateMatrix,"translateMatrix");
+
+  printVecArray(cubeArray,8,"cubeArray");
+  printVecArray(modelGnomonArray,4,"modelGnomonArray");
+  printVecArray(worldFrame,4,"worldFrame");
+
+  //printMatrix(cobWorldToModel,"cobWorldToModel");
+  //printMatrix(cobModelToWorld*cobWorldToModel,"combined");
 }
 void TranslateModelInteraction::centre( float value ){
   cout<<"TranslateModelInteraction centre "<<value<<endl;
@@ -136,49 +240,67 @@ void TranslateModelInteraction::right( float value ){
 ScaleModelInteraction::ScaleModelInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[] ):Interaction(modGnoArr,cubeArr){}
 void ScaleModelInteraction::left( float value ){
   mat4 cobModelToWorld = getCOBModelToWorld();
+  mat4 cobWorldToModel = getCOBWorldToModel();
 
   // Update scale
-  scaleX = scaleX + value*0.001;
 
-  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
 
-  mat4 result = cobModelToWorld * scaleMatrix;
+  //mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,value*0.001),1.0f,1.0f));
 
+  //scaleX = scaleX + value*0.001;
+
+  mat4 result = cobModelToWorld * scaleMatrix * cobWorldToModel;
+
+  /*
   for(int i=0;i<8;i++){
     cubeArray[i] = originalCubeArray[i];
   }
+  */
 
   applyMatrix(result,cubeArray,8);
 }
 void ScaleModelInteraction::centre( float value ){
   mat4 cobModelToWorld = getCOBModelToWorld();
+  mat4 cobWorldToModel = getCOBWorldToModel();
 
   // Update scale
-  scaleY = scaleY + value*0.001;
 
-  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
 
-  mat4 result = cobModelToWorld * scaleMatrix;
+  //mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(1.0f,pow(10.0f,value*0.001),1.0f));
 
+  //scaleX = scaleX + value*0.001;
+
+  mat4 result = cobModelToWorld * scaleMatrix * cobWorldToModel;
+
+  /*
   for(int i=0;i<8;i++){
     cubeArray[i] = originalCubeArray[i];
   }
+  */
 
   applyMatrix(result,cubeArray,8);
 }
 void ScaleModelInteraction::right( float value ){
   mat4 cobModelToWorld = getCOBModelToWorld();
+  mat4 cobWorldToModel = getCOBWorldToModel();
 
   // Update scale
-  scaleZ = scaleZ + value*0.001;
 
-  mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
 
-  mat4 result = cobModelToWorld * scaleMatrix;
+  //mat4 scaleMatrix = scale(mat4(1.0f),vec3(pow(10.0f,scaleX),pow(10.0f,scaleY),pow(10.0f,scaleZ)));
+  mat4 scaleMatrix = scale(mat4(1.0f),vec3(1.0f,1.0f,pow(10.0f,value*0.001)));
 
+  //scaleX = scaleX + value*0.001;
+
+  mat4 result = cobModelToWorld * scaleMatrix * cobWorldToModel;
+
+  /*
   for(int i=0;i<8;i++){
     cubeArray[i] = originalCubeArray[i];
   }
+  */
 
   applyMatrix(result,cubeArray,8);
 }

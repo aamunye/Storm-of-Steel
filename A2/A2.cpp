@@ -61,18 +61,18 @@ void A2::init()
 	mapVboDataToVertexAttributeLocation();
 
 	// Setup Cube Coordinates
-	cubeArray[ 0 ] = vec4( -1.0f, 1.0f, 1.0f, 0.0f );	// Front, top, left
-	cubeArray[ 1 ] = vec4( 1.0f, 1.0f, 1.0f, 0.0f );	// Front, top, right
-	cubeArray[ 2 ] = vec4( 1.0f, 1.0f, -1.0f, 0.0f );	// Back, top, right
-	cubeArray[ 3 ] = vec4( -1.0f, 1.0f, -1.0f, 0.0f );	// Back, top, left
-	cubeArray[ 4 ] = vec4( -1.0f, -1.0f, 1.0f, 0.0f );	// Front, bottom, left
-	cubeArray[ 5 ] = vec4( 1.0f, -1.0f, 1.0f, 0.0f );	// Front, bottom, right
-	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, right
-	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, left
+	cubeArray[ 0 ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );	// Front, top, left
+	cubeArray[ 1 ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );	// Front, top, right
+	cubeArray[ 2 ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );	// Back, top, right
+	cubeArray[ 3 ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );	// Back, top, left
+	cubeArray[ 4 ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );	// Front, bottom, left
+	cubeArray[ 5 ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );	// Front, bottom, right
+	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );	// Back, bottom, right
+	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );	// Back, bottom, left
 
-	modelGnomonArray[ 0 ] = vec4( 1.0f, 0.0f, 0.0f, 0.0f );
-	modelGnomonArray[ 1 ] = vec4( 0.0f , 1.0f, 0.0f, 0.0f );
-	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 0.0f );
+	modelGnomonArray[ 0 ] = vec4( 1.0f, 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 1 ] = vec4( 0.0f , 1.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 1.0f );
 	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.0f, 0.0f , 1.0f );	// The origin
 
 	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray);
@@ -268,11 +268,11 @@ void A2::appLogic()
 	drawLine(tempArray[2],tempArray[6]);
 
 	setLineColour(vec3(1.0f, 0.0f, 0.0f));
-	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[0]-modelGnomonArray[3]));
+	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[0]-modelGnomonArray[3])+modelGnomonArray[3]);
 	setLineColour(vec3(0.0f, 1.0f, 0.0f));
-	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[1]-modelGnomonArray[3]));
+	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[1]-modelGnomonArray[3])+modelGnomonArray[3]);
 	setLineColour(vec3(0.0f, 0.0f, 1.0f));
-	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[2]-modelGnomonArray[3]));
+	drawLine(modelGnomonArray[3],0.25f*(modelGnomonArray[2]-modelGnomonArray[3])+modelGnomonArray[3]);
 }
 
 //----------------------------------------------------------------------------------------
@@ -387,18 +387,18 @@ void A2::cleanup()
 void A2::resetValues()
 {
 	// Setup Cube Coordinates
-	cubeArray[ 0 ] = vec4( -1.0f, 1.0f, 1.0f, 0.0f );	// Front, top, left
-	cubeArray[ 1 ] = vec4( 1.0f, 1.0f, 1.0f, 0.0f );	// Front, top, right
-	cubeArray[ 2 ] = vec4( 1.0f, 1.0f, -1.0f, 0.0f );	// Back, top, right
-	cubeArray[ 3 ] = vec4( -1.0f, 1.0f, -1.0f, 0.0f );	// Back, top, left
-	cubeArray[ 4 ] = vec4( -1.0f, -1.0f, 1.0f, 0.0f );	// Front, bottom, left
-	cubeArray[ 5 ] = vec4( 1.0f, -1.0f, 1.0f, 0.0f );	// Front, bottom, right
-	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, right
-	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 0.0f );	// Back, bottom, left
+	cubeArray[ 0 ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );	// Front, top, left
+	cubeArray[ 1 ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );	// Front, top, right
+	cubeArray[ 2 ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );	// Back, top, right
+	cubeArray[ 3 ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );	// Back, top, left
+	cubeArray[ 4 ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );	// Front, bottom, left
+	cubeArray[ 5 ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );	// Front, bottom, right
+	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );	// Back, bottom, right
+	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );	// Back, bottom, left
 
-	modelGnomonArray[ 0 ] = vec4( 1.0f, 0.0f, 0.0f, 0.0f );
-	modelGnomonArray[ 1 ] = vec4( 0.0f , 1.0f, 0.0f, 0.0f );
-	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 0.0f );
+	modelGnomonArray[ 0 ] = vec4( 1.0f, 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 1 ] = vec4( 0.0f , 1.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 1.0f );
 	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.0f, 0.0f , 1.0f );	// The origin
 
 	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray);

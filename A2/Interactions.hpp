@@ -57,6 +57,7 @@ protected:
   static float scaleX;
   static float scaleY;
   static float scaleZ;
+
 };
 
 class RotateViewInteraction : public Interaction {
