@@ -61,19 +61,37 @@ void A2::init()
 	mapVboDataToVertexAttributeLocation();
 
 	// Setup Cube Coordinates
-	cubeArray[ 0 ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );	// Front, top, left
-	cubeArray[ 1 ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );	// Front, top, right
-	cubeArray[ 2 ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );	// Back, top, right
-	cubeArray[ 3 ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );	// Back, top, left
-	cubeArray[ 4 ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );	// Front, bottom, left
-	cubeArray[ 5 ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );	// Front, bottom, right
-	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );	// Back, bottom, right
-	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );	// Back, bottom, left
+	cubeArray[ 0  ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 1  ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 2  ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 3  ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 4  ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 5  ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 6  ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 7  ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 8  ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 9  ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 10 ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 11 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 12 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 13 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 14 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 15 ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 16 ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 17 ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 18 ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 19 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 20 ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 21 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 22 ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 23 ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );
 
-	modelGnomonArray[ 0 ] = vec4( 1.0f, 0.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 1 ] = vec4( 0.0f , 1.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 1.0f );
-	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.0f, 0.0f , 1.0f );	// The origin
+	modelGnomonArray[ 0 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 1 ] = vec4( 1.0f , 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 3 ] = vec4( 0.0f, 1.0f, 0.0f , 1.0f );
+	modelGnomonArray[ 4 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 5 ] = vec4( 0.0f, 0.0f, 1.0f , 1.0f );
 
 	cumulativeModel = mat4(1.0);
 
@@ -254,37 +272,28 @@ void A2::appLogic()
 	// Draw cube:
 
 	setLineColour(vec3(0.0f, 0.0f, 0.0f));
-	vec4 tempArray[8];
-	for(int i=0;i<8;i++){
-		tempArray[i] = cumulativeModel * cubeArray[i];
+	for(int i=0;i<12;i++){
+		drawLine(cumulativeModel * cubeArray[2*i], cumulativeModel * cubeArray[2*i+1]);
 	}
 
-	drawLine(tempArray[0],tempArray[1]);
-	drawLine(tempArray[1],tempArray[2]);
-	drawLine(tempArray[2],tempArray[3]);
-	drawLine(tempArray[3],tempArray[0]);
-	drawLine(tempArray[4],tempArray[5]);
-	drawLine(tempArray[5],tempArray[6]);
-	drawLine(tempArray[6],tempArray[7]);
-	drawLine(tempArray[7],tempArray[4]);
-	drawLine(tempArray[1],tempArray[5]);
-	drawLine(tempArray[0],tempArray[4]);
-	drawLine(tempArray[3],tempArray[7]);
-	drawLine(tempArray[2],tempArray[6]);
-
-
-	vec4 tempArray2[4];
+	vec4 transformedModelGnomon[4];
 	mat4 cumulModelTR = currentInteraction->cumulativeModelTR;
-	for(int i=0;i<4;i++){
-		tempArray2[i] = cumulModelTR * modelGnomonArray[i];
+	for(int i=0;i<6;i++){
+		transformedModelGnomon[i] = cumulModelTR * modelGnomonArray[i];
 	}
 
 	setLineColour(vec3(1.0f, 0.0f, 0.0f));
-	drawLine(tempArray2[3],0.25f*(tempArray2[0]-tempArray2[3])+tempArray2[3]);
+	drawLine(
+		transformedModelGnomon[0],
+		0.25f*(transformedModelGnomon[1]-transformedModelGnomon[0])+transformedModelGnomon[0]);
 	setLineColour(vec3(0.0f, 1.0f, 0.0f));
-	drawLine(tempArray2[3],0.25f*(tempArray2[1]-tempArray2[3])+tempArray2[3]);
+	drawLine(
+		transformedModelGnomon[2],
+		0.25f*(transformedModelGnomon[3]-transformedModelGnomon[2])+transformedModelGnomon[2]);
 	setLineColour(vec3(0.0f, 0.0f, 1.0f));
-	drawLine(tempArray2[3],0.25f*(tempArray2[2]-tempArray2[3])+tempArray2[3]);
+	drawLine(
+		transformedModelGnomon[4],
+		0.25f*(transformedModelGnomon[5]-transformedModelGnomon[4])+transformedModelGnomon[4]);
 }
 
 //----------------------------------------------------------------------------------------
@@ -399,19 +408,41 @@ void A2::cleanup()
 void A2::resetValues()
 {
 	// Setup Cube Coordinates
-	cubeArray[ 0 ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );	// Front, top, left
-	cubeArray[ 1 ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );	// Front, top, right
-	cubeArray[ 2 ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );	// Back, top, right
-	cubeArray[ 3 ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );	// Back, top, left
-	cubeArray[ 4 ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );	// Front, bottom, left
-	cubeArray[ 5 ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );	// Front, bottom, right
-	cubeArray[ 6 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );	// Back, bottom, right
-	cubeArray[ 7 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );	// Back, bottom, left
+	cubeArray[ 0  ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 1  ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 2  ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 3  ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 4  ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 5  ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 6  ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 7  ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 8  ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 9  ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 10 ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 11 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 12 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 13 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 14 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 15 ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 16 ] = vec4( -1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 17 ] = vec4( -1.0f, -1.0f, 1.0f, 1.0f );
+	cubeArray[ 18 ] = vec4( -1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 19 ] = vec4( -1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 20 ] = vec4( 1.0f, 1.0f, -1.0f, 1.0f );
+	cubeArray[ 21 ] = vec4( 1.0f, -1.0f, -1.0f, 1.0f );
+	cubeArray[ 22 ] = vec4( 1.0f, 1.0f, 1.0f, 1.0f );
+	cubeArray[ 23 ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );
 
-	modelGnomonArray[ 0 ] = vec4( 1.0f, 0.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 1 ] = vec4( 0.0f , 1.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f , 1.0f, 1.0f );
-	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.0f, 0.0f , 1.0f );	// The origin
+
+
+
+
+	modelGnomonArray[ 0 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 1 ] = vec4( 1.0f , 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 3 ] = vec4( 0.0f, 1.0f, 0.0f , 1.0f );
+	modelGnomonArray[ 4 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 5 ] = vec4( 0.0f, 0.0f, 1.0f , 1.0f );
 
 	cumulativeModel = mat4(1.0);
 

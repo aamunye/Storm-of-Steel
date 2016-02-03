@@ -79,8 +79,8 @@ protected:
 
 	glm::vec3 m_currentLineColour;
 
-	glm::vec4 cubeArray[8];
-	glm::vec4 modelGnomonArray[4];
+	glm::vec4 cubeArray[24];
+	glm::vec4 modelGnomonArray[6];
 
 	glm::mat4 cumulativeModel;
 
