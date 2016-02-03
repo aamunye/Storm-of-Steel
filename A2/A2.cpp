@@ -272,15 +272,24 @@ void A2::appLogic()
 	// Draw cube:
 
 	setLineColour(vec3(0.0f, 0.0f, 0.0f));
+	mat4 cumulView = currentInteraction->cumulativeView;
+	//cumulView = mat4(1.0f);
 	for(int i=0;i<12;i++){
-		drawLine(cumulativeModel * cubeArray[2*i], cumulativeModel * cubeArray[2*i+1]);
+		drawLine(cumulView * cumulativeModel * cubeArray[2*i], cumulView * cumulativeModel * cubeArray[2*i+1]);
 	}
 
-	vec4 transformedModelGnomon[4];
+	vec4 transformedModelGnomon[6];
 	mat4 cumulModelTR = currentInteraction->cumulativeModelTR;
 	for(int i=0;i<6;i++){
-		transformedModelGnomon[i] = cumulModelTR * modelGnomonArray[i];
+		transformedModelGnomon[i] = cumulView * cumulModelTR * modelGnomonArray[i];
 	}
+
+	vec4 transformedWorldGnomon[6];
+	for(int i=0;i<6;i++){
+		transformedWorldGnomon[i] = cumulView * modelGnomonArray[i];
+	}
+
+
 
 	setLineColour(vec3(1.0f, 0.0f, 0.0f));
 	drawLine(
@@ -294,6 +303,21 @@ void A2::appLogic()
 	drawLine(
 		transformedModelGnomon[4],
 		0.25f*(transformedModelGnomon[5]-transformedModelGnomon[4])+transformedModelGnomon[4]);
+
+
+	setLineColour(vec3(0.0f, 0.5f, 0.5f));
+	drawLine(
+		transformedWorldGnomon[0],
+		0.25f*(transformedWorldGnomon[1]-transformedWorldGnomon[0])+transformedWorldGnomon[0]);
+	setLineColour(vec3(0.5f, 0.0f, 0.5f));
+	drawLine(
+		transformedWorldGnomon[2],
+		0.25f*(transformedWorldGnomon[3]-transformedWorldGnomon[2])+transformedWorldGnomon[2]);
+	setLineColour(vec3(0.5f, 0.5f, 0.0f));
+	drawLine(
+		transformedWorldGnomon[4],
+		0.25f*(transformedWorldGnomon[5]-transformedWorldGnomon[4])+transformedWorldGnomon[4]);
+
 }
 
 //----------------------------------------------------------------------------------------

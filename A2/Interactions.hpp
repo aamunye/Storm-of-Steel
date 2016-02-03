@@ -13,6 +13,30 @@ using namespace glm;
 #include "cs488-framework/ShaderProgram.hpp"
 #include <glm/gtx/transform.hpp>
 
+#include "cs488-framework/GlErrorCheck.hpp"
+
+#include <iostream>
+using namespace std;
+
+#include <imgui/imgui.h>
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/io.hpp>
+using namespace glm;
+
+#include "cs488-framework/CS488Window.hpp"
+#include "cs488-framework/OpenGLImport.hpp"
+#include "cs488-framework/ShaderProgram.hpp"
+
+#include <glm/glm.hpp>
+
+#include "Interactions.hpp"
+
+
+#include <vector>
+
+
 #include <vector>
 #include <math.h>
 
@@ -31,6 +55,7 @@ public:
   void printVecArray(glm::vec4 mat[],int length,string s);
   static glm::mat4 cumulativeModelTR;
   glm::mat4 &cumulativeModel;
+  glm::mat4 cumulativeView;
 protected:
   glm::vec4 worldFrame[4]={
     vec4(1.0f,0.0f,0.0f,0.0f),

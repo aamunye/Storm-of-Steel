@@ -20,6 +20,35 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
   scaleX = 0.0f;
   scaleY = 0.0f;
   scaleZ = 0.0f;
+
+  vec3 lookAt = vec3(0.0f,0.0f,0.0f); // also the origin
+  vec3 lookFrom = vec3(0.0f,0.0f,5.0f);
+
+  vec3 up = vec3(0.0f,1.0f,0.0f);
+
+  vec3 v_z = (lookFrom - lookAt)/abs(length(lookAt - lookFrom));
+  vec3 v_x = cross(vec3(up),vec3(v_z))/abs(length(cross(vec3(up),vec3(v_z))));
+  vec3 v_y = cross(v_z, v_x);
+
+  mat4 R = mat4(
+    vec4(v_x,0),
+    vec4(v_y,0),
+    vec4(v_z,0),
+    vec4(0,0,0,1)
+  );
+
+  mat4 T = translate(mat4(1.0f),-lookFrom);
+
+  cumulativeView = R * T;
+
+  /*
+  for(int i=0;i<3;i++){
+    cout<<v_y[i]<<endl;
+  }
+  cout<<endl;
+  */
+  printMatrix(cumulativeView,"cumulativeView");
+
 }
 
 
@@ -48,12 +77,15 @@ void Interaction::printVecArray(glm::vec4 mat[],int length,string s) {
 }
 void Interaction::printMatrix(glm::mat4 mat,string s) {
   cout<<"---------"<<s<<"---------"<<endl;
+  /*
   for(int i=0;i<4;i++){
     for(int j=0;j<4;j++){
       cout<<mat[i][j]<<" ";
     }
     cout<<endl;
   }
+  */
+  cout<<mat<<endl;
   cout<<"------------------"<<endl<<endl;
 }
 /*
