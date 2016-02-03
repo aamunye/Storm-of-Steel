@@ -22,7 +22,7 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
   scaleZ = 0.0f;
 
   vec3 lookAt = vec3(0.0f,0.0f,0.0f); // also the origin
-  vec3 lookFrom = vec3(0.0f,0.0f,5.0f);
+  vec3 lookFrom = vec3(0.0f,0.1f,5.0f);
 
   vec3 up = vec3(0.0f,1.0f,0.0f);
 
@@ -39,7 +39,12 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
 
   mat4 T = translate(mat4(1.0f),-lookFrom);
 
-  cumulativeView = R * T;
+  originalViewMatrix = R * T;
+
+  rotateViewMat = mat4(1.0f);
+  translateViewMat = mat4(1.0f);
+
+  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
 
   /*
   for(int i=0;i<3;i++){
@@ -47,7 +52,7 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
   }
   cout<<endl;
   */
-  printMatrix(cumulativeView,"cumulativeView");
+  printMatrix(originalViewMatrix,"originalViewMatrix");
 
 }
 
@@ -157,17 +162,22 @@ void Interaction::right( float value ){
 
 RotateViewInteraction::RotateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void RotateViewInteraction::left( float value ){
-  cout<<"RotateViewInteraction left "<<value<<endl;
+  rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(1.0f,0.0f,0.0f));
+  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
 }
 void RotateViewInteraction::centre( float value ){
-  cout<<"RotateViewInteraction centre "<<value<<endl;
+  rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(0.0f,1.0f,0.0f));
+  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
 }
 void RotateViewInteraction::right( float value ){
-  cout<<"RotateViewInteraction right "<<value<<endl;
+  rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(0.0f,0.0f,1.0f));
+  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
 }
 
 TranslateViewInteraction::TranslateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void TranslateViewInteraction::left( float value ){
+  translateViewMat *= glm::translate(glm::vec3(value * 0.003f,0.0f,0.0f));
+  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
   cout<<"TranslateViewInteraction left "<<value<<endl;
 }
 void TranslateViewInteraction::centre( float value ){

@@ -86,6 +86,9 @@ protected:
   static float scaleZ;
 
   static glm::mat4 M;
+  glm::mat4 originalViewMatrix;
+  glm::mat4 rotateViewMat;
+  glm::mat4 translateViewMat;
 
 
 
