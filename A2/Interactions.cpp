@@ -6,10 +6,57 @@ using namespace std;
 
 mat4 Interaction::M;
 mat4 Interaction::cumulativeModelTR;
+
+mat4 Interaction::originalViewMatrix;
+mat4 Interaction::rotateViewMat;
+mat4 Interaction::translateViewMat;
+mat4 Interaction::cumulativeView;
+mat4 Interaction::cumulativeProj;
+
 glm::mat4 abc = mat4(1.0f);
 float Interaction::scaleX;
 float Interaction::scaleY;
 float Interaction::scaleZ;
+
+float Interaction::pNear;
+float Interaction::pFar;
+float Interaction::pFOV;
+
+void Interaction::updateCumulativeView() {
+  cumulativeView = translateViewMat * rotateViewMat * originalViewMatrix;
+}
+
+void Interaction::updateCumulativeProj() {
+  /*
+  cumulativeProj = mat4(
+    vec4(1/(tan(pFOV/2)),0,0,0),
+    vec4(0,1/tan(pFOV/2),0,0),
+    vec4(0,0,(pFar+pNear)/(pFar-pNear),-2*pFar*pNear/(pFar-pNear)),
+    vec4(0,0,1,0)
+  );
+  */
+  //cout<<"before"<<endl;
+  //cout<<cumulativeProj<<endl;
+  cumulativeProj = mat4(
+    vec4(1/(tan(pFOV/2)),0,0,0),
+    vec4(0,1/tan(pFOV/2),0,0),
+    vec4(0,0,(pFar+pNear)/(pFar - pNear),-2*pFar*pNear/(pFar-pNear)),
+    vec4(0,0,1,0)
+  );
+  //cumulativeProj = transpose(cumulativeProj);
+
+  /*
+  cumulativeProj = glm::perspective(
+   glm::radians( 45.0f ),
+   1.0f,
+   1.0f, 1000.0f );
+   */
+  //cout<<"after"<<endl;
+  //cout<<cumulativeProj<<endl;
+
+  //cumulativeModel = transpose(cumulativeModel);
+}
+
 
 Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ) : cumulativeModel(cumulMod) {
 
@@ -21,12 +68,14 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
   scaleY = 0.0f;
   scaleZ = 0.0f;
 
+  //View Start//////////////////////////////////////////////////////////////////
   vec3 lookAt = vec3(0.0f,0.0f,0.0f); // also the origin
-  vec3 lookFrom = vec3(0.0f,0.1f,5.0f);
+  vec3 lookFrom = vec3(0.0f,0.0f,5.0f);
 
   vec3 up = vec3(0.0f,1.0f,0.0f);
 
-  vec3 v_z = (lookFrom - lookAt)/abs(length(lookAt - lookFrom));
+  vec3 v_z = (lookAt - lookFrom)/abs(length(lookAt - lookFrom));
+  // not checking that the cross product is 0 because I know it won't be
   vec3 v_x = cross(vec3(up),vec3(v_z))/abs(length(cross(vec3(up),vec3(v_z))));
   vec3 v_y = cross(v_z, v_x);
 
@@ -44,15 +93,17 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
   rotateViewMat = mat4(1.0f);
   translateViewMat = mat4(1.0f);
 
-  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
+  updateCumulativeView();
+  //View End////////////////////////////////////////////////////////////////////
 
-  /*
-  for(int i=0;i<3;i++){
-    cout<<v_y[i]<<endl;
-  }
-  cout<<endl;
-  */
-  printMatrix(originalViewMatrix,"originalViewMatrix");
+  //Projection Start////////////////////////////////////////////////////////////
+  cumulativeProj = mat4(1.0f);
+  pNear = 1.0f;
+  pFar = 500.0f;
+  pFOV = 30.0f * M_PI / 180;;
+
+  updateCumulativeProj();
+  //Projection Start////////////////////////////////////////////////////////////
 
 }
 
@@ -163,39 +214,47 @@ void Interaction::right( float value ){
 RotateViewInteraction::RotateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void RotateViewInteraction::left( float value ){
   rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(1.0f,0.0f,0.0f));
-  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
+  updateCumulativeView();
 }
 void RotateViewInteraction::centre( float value ){
   rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(0.0f,1.0f,0.0f));
-  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
+  updateCumulativeView();
 }
 void RotateViewInteraction::right( float value ){
   rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(0.0f,0.0f,1.0f));
-  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
+  updateCumulativeView();
 }
 
 TranslateViewInteraction::TranslateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void TranslateViewInteraction::left( float value ){
-  translateViewMat *= glm::translate(glm::vec3(value * 0.003f,0.0f,0.0f));
-  cumulativeView = originalViewMatrix * translateViewMat * rotateViewMat;
-  cout<<"TranslateViewInteraction left "<<value<<endl;
+  translateViewMat *= glm::translate(glm::vec3(value * -0.003f,0.0f,0.0f));
+  updateCumulativeView();
 }
 void TranslateViewInteraction::centre( float value ){
-  cout<<"TranslateViewInteraction centre "<<value<<endl;
+  translateViewMat *= glm::translate(glm::vec3(0.0f, value * -0.003f, 0.0f));
+  updateCumulativeView();
 }
 void TranslateViewInteraction::right( float value ){
-  cout<<"TranslateViewInteraction right "<<value<<endl;
+  translateViewMat *= glm::translate(glm::vec3(0.0f, 0.0f, value * -0.003f));
+  updateCumulativeView();
 }
 
 PerspectiveInteraction::PerspectiveInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void PerspectiveInteraction::left( float value ){
-  cout<<"PerspectiveInteraction left "<<value<<endl;
+  //cout<<"PerspectiveInteraction left "<<value<<endl;
+  float new_pFOV = pFOV + value * 0.001;
+  if(new_pFOV > P_NEAR_MIN && new_pFOV < P_NEAR_MAX) {
+    pFOV += value * 0.001;
+    updateCumulativeProj();
+  }
 }
 void PerspectiveInteraction::centre( float value ){
-  cout<<"PerspectiveInteraction centre "<<value<<endl;
+  pNear += value * 0.01;
+  updateCumulativeProj();
 }
 void PerspectiveInteraction::right( float value ){
-  cout<<"PerspectiveInteraction right "<<value<<endl;
+  pFar += value * 0.01;
+  updateCumulativeProj();
 }
 
 RotateModelInteraction::RotateModelInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}

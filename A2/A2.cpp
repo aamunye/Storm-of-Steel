@@ -270,23 +270,37 @@ void A2::appLogic()
 	initLineData();
 
 	// Draw cube:
-
 	setLineColour(vec3(0.0f, 0.0f, 0.0f));
 	mat4 cumulView = currentInteraction->cumulativeView;
-	//cumulView = mat4(1.0f);
-	for(int i=0;i<12;i++){
-		drawLine(cumulView * cumulativeModel * cubeArray[2*i], cumulView * cumulativeModel * cubeArray[2*i+1]);
+	mat4 cumulProj = currentInteraction->cumulativeProj;
+
+	vec4 transformedCube[24];
+	for(int i=0;i<24;i++){
+		transformedCube[i] = cumulProj * cumulView * cumulativeModel * cubeArray[i];
+		for(int j=0;j<4;j++){
+			transformedCube[i][j]/=transformedCube[i][3];
+		}
 	}
+	for(int i=0;i<12;i++){
+		drawLine(transformedCube[2*i],transformedCube[2*i+1]);
+	}
+
 
 	vec4 transformedModelGnomon[6];
 	mat4 cumulModelTR = currentInteraction->cumulativeModelTR;
 	for(int i=0;i<6;i++){
-		transformedModelGnomon[i] = cumulView * cumulModelTR * modelGnomonArray[i];
+		transformedModelGnomon[i] = cumulProj * cumulView * cumulModelTR * modelGnomonArray[i];
+		for(int j=0;j<4;j++){
+			transformedModelGnomon[i][j]/=transformedModelGnomon[i][3];
+		}
 	}
 
 	vec4 transformedWorldGnomon[6];
 	for(int i=0;i<6;i++){
-		transformedWorldGnomon[i] = cumulView * modelGnomonArray[i];
+		transformedWorldGnomon[i] = cumulProj * cumulView * modelGnomonArray[i];
+		for(int j=0;j<4;j++){
+			transformedWorldGnomon[i][j]/=transformedWorldGnomon[i][3];
+		}
 	}
 
 
@@ -305,15 +319,15 @@ void A2::appLogic()
 		0.25f*(transformedModelGnomon[5]-transformedModelGnomon[4])+transformedModelGnomon[4]);
 
 
-	setLineColour(vec3(0.0f, 0.5f, 0.5f));
+	setLineColour(vec3(1.0f, 1.0f, 0.0f));
 	drawLine(
 		transformedWorldGnomon[0],
 		0.25f*(transformedWorldGnomon[1]-transformedWorldGnomon[0])+transformedWorldGnomon[0]);
-	setLineColour(vec3(0.5f, 0.0f, 0.5f));
+	setLineColour(vec3(0.0f, 1.0f, 1.0f));
 	drawLine(
 		transformedWorldGnomon[2],
 		0.25f*(transformedWorldGnomon[3]-transformedWorldGnomon[2])+transformedWorldGnomon[2]);
-	setLineColour(vec3(0.5f, 0.5f, 0.0f));
+	setLineColour(vec3(1.0f, 0.0f, 1.0f));
 	drawLine(
 		transformedWorldGnomon[4],
 		0.25f*(transformedWorldGnomon[5]-transformedWorldGnomon[4])+transformedWorldGnomon[4]);

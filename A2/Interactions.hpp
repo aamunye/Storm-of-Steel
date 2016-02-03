@@ -53,9 +53,16 @@ public:
   virtual void right( float value );
   void printMatrix(glm::mat4,string);
   void printVecArray(glm::vec4 mat[],int length,string s);
+
   static glm::mat4 cumulativeModelTR;
   glm::mat4 &cumulativeModel;
-  glm::mat4 cumulativeView;
+  static glm::mat4 cumulativeView;
+
+  static glm::mat4 cumulativeProj;
+
+  // In degrees
+  const float P_NEAR_MIN = 5 * M_PI / 180;
+  const float P_NEAR_MAX = 160 * M_PI / 180;
 protected:
   glm::vec4 worldFrame[4]={
     vec4(1.0f,0.0f,0.0f,0.0f),
@@ -86,9 +93,17 @@ protected:
   static float scaleZ;
 
   static glm::mat4 M;
-  glm::mat4 originalViewMatrix;
-  glm::mat4 rotateViewMat;
-  glm::mat4 translateViewMat;
+  static glm::mat4 originalViewMatrix;
+  static glm::mat4 rotateViewMat;
+  static glm::mat4 translateViewMat;
+
+  void updateCumulativeView();
+
+  void updateCumulativeProj();
+  static float pNear;
+  static float pFar;
+  static float pFOV;
+
 
 
 
