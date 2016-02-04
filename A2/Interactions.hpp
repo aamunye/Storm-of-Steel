@@ -40,8 +40,9 @@ using namespace glm;
 #include <vector>
 #include <math.h>
 
-enum Mode { ROTATE_VIEW, TRANSLATE_VIEW, PERSPECTIVE, ROTATE_MODEL,
-  TRANSLATE_MODEL, SCALE_MODEL, VIEWPORT };
+
+enum Mode { ROTATE_MODEL, TRANSLATE_MODEL, SCALE_MODEL, ROTATE_VIEW,
+  TRANSLATE_VIEW, PERSPECTIVE, VIEWPORT};
 
 
 class Interaction {

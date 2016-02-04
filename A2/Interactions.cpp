@@ -105,8 +105,8 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
 
   //Projection Start////////////////////////////////////////////////////////////
   cumulativeProj = mat4(1.0f);
-  pNear = 1.0f;
-  pFar = 10.0f;
+  pNear = 5.0f;
+  pFar = 12.0f;
   pFOV = 30.0f * M_PI / 180;;
 
   updateCumulativeProj();
@@ -238,15 +238,15 @@ void RotateViewInteraction::right( float value ){
 
 TranslateViewInteraction::TranslateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void TranslateViewInteraction::left( float value ){
-  translateViewMat *= glm::translate(glm::vec3(value * 0.003f,0.0f,0.0f));
+  translateViewMat *= glm::translate(glm::vec3(value * 0.01f,0.0f,0.0f));
   updateCumulativeView();
 }
 void TranslateViewInteraction::centre( float value ){
-  translateViewMat *= glm::translate(glm::vec3(0.0f, value * 0.003f, 0.0f));
+  translateViewMat *= glm::translate(glm::vec3(0.0f, value * 0.01f, 0.0f));
   updateCumulativeView();
 }
 void TranslateViewInteraction::right( float value ){
-  translateViewMat *= glm::translate(glm::vec3(0.0f, 0.0f, value * 0.003f));
+  translateViewMat *= glm::translate(glm::vec3(0.0f, 0.0f, value * 0.01f));
   updateCumulativeView();
 }
 
@@ -329,11 +329,8 @@ void ScaleModelInteraction::right( float value ){
 
 ViewportInteraction::ViewportInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void ViewportInteraction::left( float value ){
-  cout<<"ViewportInteraction left "<<value<<endl;
 }
 void ViewportInteraction::centre( float value ){
-  cout<<"ViewportInteraction centre "<<value<<endl;
 }
 void ViewportInteraction::right( float value ){
-  cout<<"ViewportInteraction right "<<value<<endl;
 }

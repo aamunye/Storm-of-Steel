@@ -87,23 +87,23 @@ void A2::init()
 	cubeArray[ 23 ] = vec4( 1.0f, -1.0f, 1.0f, 1.0f );
 
 	modelGnomonArray[ 0 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 1 ] = vec4( 1.0f , 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 1 ] = vec4( 0.25f , 0.0f, 0.0f, 1.0f );
 	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 3 ] = vec4( 0.0f, 1.0f, 0.0f , 1.0f );
+	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.25f, 0.0f , 1.0f );
 	modelGnomonArray[ 4 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 5 ] = vec4( 0.0f, 0.0f, 1.0f , 1.0f );
+	modelGnomonArray[ 5 ] = vec4( 0.0f, 0.0f, 0.25f , 1.0f );
 
 	cumulativeModel = mat4(1.0);
 
-	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[1] = new TranslateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[2] = new PerspectiveInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[3] = new RotateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[4] = new TranslateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[5] = new ScaleModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[0] = new RotateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[1] = new TranslateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[2] = new ScaleModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[3] = new RotateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[4] = new TranslateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[5] = new PerspectiveInteraction(modelGnomonArray, cubeArray, cumulativeModel);
 	interactionModes[6] = new ViewportInteraction(modelGnomonArray, cubeArray, cumulativeModel);
 
-	currentMode = ROTATE_VIEW;
+	currentMode = ROTATE_MODEL;
 	currentInteraction = interactionModes[currentMode];
 
 	leftButtonPressed = false;
@@ -381,6 +381,8 @@ void A2::appLogic()
 	for(int i=0;i<24;i++){
 		transformedCube[i] = cumulView * cumulativeModel * cubeArray[i];
 	}
+	float far = currentInteraction->pFar;
+	float near = currentInteraction->pNear;
 	for(int i=0;i<12;i++){
 		//nearAndFarClipping(transformedCube[2*i],transformedCube[2*i+1]);
 		/*
@@ -402,8 +404,7 @@ void A2::appLogic()
 			transformedCube[2*i+1] = transformedCube[2*i] + t *(transformedCube[2*i+1]-transformedCube[2*i]);
 		}
 		*/
-		float far = currentInteraction->pFar;
-		float near = currentInteraction->pNear;
+
 		// far clipping
 		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,0.0f,near,1.0f),vec4(0,0,1,0));
 		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,0.0f,far,1.0f),vec4(0,0,-1,0));
@@ -423,15 +424,10 @@ void A2::appLogic()
 		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(1.0f,1.0f,1.0f,1.0f),vec4(-1,0,0,0));
 		//left
 		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(-1.0f,1.0f,1.0f,1.0f),vec4(1,0,0,0));
-
 		//top
 		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,1.0f,0.0f,1.0f),vec4(0,-1,0,0));
-
 		//bottom
 		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,-1.0f,0.0f,1.0f),vec4(0,1,0,0));
-
-		//bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,0.0f,far,1.0f),vec4(0,0,-1,0));
-		//bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,0.0f,far,1.0f),vec4(0,0,-1,0));
 
 		transformToViewport(transformedCube[2*i]);
 		transformToViewport(transformedCube[2*i+1]);
@@ -441,72 +437,152 @@ void A2::appLogic()
 		}
 	}
 
-
+	bool bDrawModelGnomon[3];
 	vec4 transformedModelGnomon[6];
 	mat4 cumulModelTR = currentInteraction->cumulativeModelTR;
-	for(int i=0;i<6;i++){
-		transformedModelGnomon[i] = cumulProj * cumulView * cumulModelTR * modelGnomonArray[i];
+	for(int i=0;i<3;i++){
+		bDrawModelGnomon[i]=true;
+
+		transformedModelGnomon[2*i] =  cumulView * cumulModelTR * modelGnomonArray[2*i];
+		transformedModelGnomon[2*i+1] = cumulView * cumulModelTR * modelGnomonArray[2*i+1];
+
+		//near and far
+		bDrawModelGnomon[i] &= clip(transformedModelGnomon[2*i],transformedModelGnomon[2*i+1],vec4(0.0f,0.0f,near,1.0f),vec4(0,0,1,0));
+		bDrawModelGnomon[i] &= clip(transformedModelGnomon[2*i],transformedModelGnomon[2*i+1],vec4(0.0f,0.0f,far,1.0f),vec4(0,0,-1,0));
+
+		transformedModelGnomon[2*i] = cumulProj * transformedModelGnomon[2*i];
+		transformedModelGnomon[2*i+1] = cumulProj * transformedModelGnomon[2*i+1];
+
 		for(int j=0;j<4;j++){
-			transformedModelGnomon[i][j]/=transformedModelGnomon[i][3];
+			transformedModelGnomon[2*i][j]/=transformedModelGnomon[2*i][3];
+			transformedModelGnomon[2*i+1][j]/=transformedModelGnomon[2*i+1][3];
 		}
-		transformToViewport(transformedModelGnomon[i]);
+
+		//right
+		bDrawModelGnomon[i] &= clip(transformedModelGnomon[2*i],transformedModelGnomon[2*i+1],vec4(1.0f,1.0f,1.0f,1.0f),vec4(-1,0,0,0));
+		//left
+		bDrawModelGnomon[i] &= clip(transformedModelGnomon[2*i],transformedModelGnomon[2*i+1],vec4(-1.0f,1.0f,1.0f,1.0f),vec4(1,0,0,0));
+		//top
+		bDrawModelGnomon[i] &= clip(transformedModelGnomon[2*i],transformedModelGnomon[2*i+1],vec4(0.0f,1.0f,0.0f,1.0f),vec4(0,-1,0,0));
+		//bottom
+		bDrawModelGnomon[i] &= clip(transformedModelGnomon[2*i],transformedModelGnomon[2*i+1],vec4(0.0f,-1.0f,0.0f,1.0f),vec4(0,1,0,0));
+
+		transformToViewport(transformedModelGnomon[2*i]);
+		transformToViewport(transformedModelGnomon[2*i+1]);
 	}
-
-	vec4 transformedWorldGnomon[6];
-	for(int i=0;i<6;i++){
-		transformedWorldGnomon[i] = cumulProj * cumulView * modelGnomonArray[i];
-		for(int j=0;j<4;j++){
-			transformedWorldGnomon[i][j]/=transformedWorldGnomon[i][3];
-
-		}
-		//TODO cleanup
-		transformToViewport(transformedWorldGnomon[i]);
-		/*
-		float x = transformedWorldGnomon[i].x;
-		float y = transformedWorldGnomon[i].y;
-		float xin = (x + 1)/2*(viewportEnd.x - viewportStart.x) + viewportStart.x;
-		float yin = (y + 1)/2*(viewportStart.y - viewportEnd.y) + viewportEnd.y;
-		transformedWorldGnomon[i].x = xin;
-		transformedWorldGnomon[i].y = yin;
-		*/
-
-	}
-
-
-
 	setLineColour(vec3(1.0f, 0.0f, 0.0f));
-	drawLine(
-		transformedModelGnomon[0],
-		0.25f*(transformedModelGnomon[1]-transformedModelGnomon[0])+transformedModelGnomon[0]);
+	if(bDrawModelGnomon[0]){
+		drawLine(transformedModelGnomon[0],transformedModelGnomon[1]);
+	}
 	setLineColour(vec3(0.0f, 1.0f, 0.0f));
-	drawLine(
-		transformedModelGnomon[2],
-		0.25f*(transformedModelGnomon[3]-transformedModelGnomon[2])+transformedModelGnomon[2]);
+	if(bDrawModelGnomon[1]){
+		drawLine(transformedModelGnomon[2],transformedModelGnomon[3]);
+	}
 	setLineColour(vec3(0.0f, 0.0f, 1.0f));
-	drawLine(
-		transformedModelGnomon[4],
-		0.25f*(transformedModelGnomon[5]-transformedModelGnomon[4])+transformedModelGnomon[4]);
+	if(bDrawModelGnomon[2]){
+		drawLine(transformedModelGnomon[4],transformedModelGnomon[5]);
+	}
 
+	bool bDrawWorldGnomon[3];
+	vec4 transformedWorldGnomon[6];
+	for(int i=0;i<3;i++)bDrawWorldGnomon[i]=true;
+	/*
+
+	for(int i=0;i<3;i++){
+		bDrawWorldGnomon[i]=true;
+
+		transformedWorldGnomon[2*i] = cumulView * modelGnomonArray[2*i];
+		transformedWorldGnomon[2*i+1] = cumulView * modelGnomonArray[2*i];
+
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(0.0f,0.0f,near,1.0f),vec4(0,0,1,0));
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(0.0f,0.0f,far,1.0f),vec4(0,0,-1,0));
+
+		transformedWorldGnomon[2*i] = cumulProj * modelGnomonArray[2*i];
+		transformedWorldGnomon[2*i+1] = cumulProj * modelGnomonArray[2*i];
+		for(int j=0;j<4;j++){
+			transformedWorldGnomon[2*i][j]/=transformedWorldGnomon[2*i][3];
+			transformedWorldGnomon[2*i+1][j]/=transformedWorldGnomon[2*i+1][3];
+
+		}
+		//right
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(1.0f,1.0f,1.0f,1.0f),vec4(-1,0,0,0));
+		//left
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(-1.0f,1.0f,1.0f,1.0f),vec4(1,0,0,0));
+		//top
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(0.0f,1.0f,0.0f,1.0f),vec4(0,-1,0,0));
+		//bottom
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(0.0f,-1.0f,0.0f,1.0f),vec4(0,1,0,0));
+
+		//TODO cleanup
+		transformToViewport(transformedWorldGnomon[2*i]);
+		transformToViewport(transformedWorldGnomon[2*i+1]);
+
+	}
+
+	cout<<"bDrawWorldGnomon[0]"<<bDrawWorldGnomon[0]<<endl;
 
 	setLineColour(vec3(1.0f, 1.0f, 0.0f));
-	drawLine(
-		transformedWorldGnomon[0],
-		0.25f*(transformedWorldGnomon[1]-transformedWorldGnomon[0])+transformedWorldGnomon[0]);
+	if(bDrawWorldGnomon[0]){
+		drawLine(transformedWorldGnomon[0],transformedWorldGnomon[1]);
+	}
 	setLineColour(vec3(0.0f, 1.0f, 1.0f));
-	drawLine(
-		transformedWorldGnomon[2],
-		0.25f*(transformedWorldGnomon[3]-transformedWorldGnomon[2])+transformedWorldGnomon[2]);
+	if(bDrawWorldGnomon[1]){
+		drawLine(transformedWorldGnomon[2],transformedWorldGnomon[3]);
+	}
 	setLineColour(vec3(1.0f, 0.0f, 1.0f));
-	drawLine(
-		transformedWorldGnomon[4],
-		0.25f*(transformedWorldGnomon[5]-transformedWorldGnomon[4])+transformedWorldGnomon[4]);
+	if(bDrawWorldGnomon[2]){
+		drawLine(transformedWorldGnomon[4],transformedWorldGnomon[5]);
+	}*/
 
-		setLineColour(vec3(0.0f, 0.0f, 0.0f));
 
-		drawLine(vec2(viewportStart.x,viewportStart.y),vec2(viewportEnd.x,viewportStart.y));
-		drawLine(vec2(viewportEnd.x,viewportStart.y),vec2(viewportEnd.x,viewportEnd.y));
-		drawLine(vec2(viewportEnd.x,viewportEnd.y),vec2(viewportStart.x,viewportEnd.y));
-		drawLine(vec2(viewportStart.x,viewportEnd.y),vec2(viewportStart.x,viewportStart.y));
+	for(int i=0;i<3;i++){
+		bDrawWorldGnomon[i]=true;
+
+		transformedWorldGnomon[2*i] = cumulView * modelGnomonArray[2*i];
+		transformedWorldGnomon[2*i+1] = cumulView * modelGnomonArray[2*i+1];
+
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(0.0f,0.0f,near,1.0f),vec4(0,0,1,0));
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(0.0f,0.0f,far,1.0f),vec4(0,0,-1,0));
+
+		transformedWorldGnomon[2*i] = cumulProj * transformedWorldGnomon[2*i];
+		transformedWorldGnomon[2*i+1] = cumulProj * transformedWorldGnomon[2*i+1];
+		for(int j=0;j<4;j++){
+			transformedWorldGnomon[2*i][j]/=transformedWorldGnomon[2*i][3];
+			transformedWorldGnomon[2*i+1][j]/=transformedWorldGnomon[2*i+1][3];
+
+		}
+		//right
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(1.0f,1.0f,1.0f,1.0f),vec4(-1,0,0,0));
+		//left
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(-1.0f,1.0f,1.0f,1.0f),vec4(1,0,0,0));
+		//top
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(0.0f,1.0f,0.0f,1.0f),vec4(0,-1,0,0));
+		//bottom
+		bDrawWorldGnomon[i] &= clip(transformedWorldGnomon[2*i],transformedWorldGnomon[2*i+1],vec4(0.0f,-1.0f,0.0f,1.0f),vec4(0,1,0,0));
+		//TODO cleanup
+		transformToViewport(transformedWorldGnomon[2*i]);
+		transformToViewport(transformedWorldGnomon[2*i+1]);
+	}
+
+	setLineColour(vec3(1.0f, 1.0f, 0.0f));
+	if(bDrawWorldGnomon[0]){
+		drawLine(transformedWorldGnomon[0],transformedWorldGnomon[1]);
+	}
+	setLineColour(vec3(0.0f, 1.0f, 1.0f));
+	if(bDrawWorldGnomon[1]){
+		drawLine(transformedWorldGnomon[2],transformedWorldGnomon[3]);
+	}
+	setLineColour(vec3(1.0f, 0.0f, 1.0f));
+	if(bDrawWorldGnomon[2]){
+		drawLine(transformedWorldGnomon[4],transformedWorldGnomon[5]);
+	}
+
+
+	setLineColour(vec3(0.0f, 0.0f, 0.0f));
+	drawLine(vec2(viewportStart.x,viewportStart.y),vec2(viewportEnd.x,viewportStart.y));
+	drawLine(vec2(viewportEnd.x,viewportStart.y),vec2(viewportEnd.x,viewportEnd.y));
+	drawLine(vec2(viewportEnd.x,viewportEnd.y),vec2(viewportStart.x,viewportEnd.y));
+	drawLine(vec2(viewportStart.x,viewportEnd.y),vec2(viewportStart.x,viewportStart.y));
 
 
 }
@@ -539,17 +615,17 @@ void A2::guiLogic()
 		}
 
 
-		if( ImGui::RadioButton( "Rotate View", &currentMode, ROTATE_VIEW ) ) {
-		}
-		if( ImGui::RadioButton( "Translate View", &currentMode, TRANSLATE_VIEW ) ) {
-		}
-		if( ImGui::RadioButton( "Perspective", &currentMode, PERSPECTIVE ) ) {
-		}
 		if( ImGui::RadioButton( "Rotate Model", &currentMode, ROTATE_MODEL ) ) {
 		}
 		if( ImGui::RadioButton( "Translate Model", &currentMode, TRANSLATE_MODEL ) ) {
 		}
 		if( ImGui::RadioButton( "Scale Model", &currentMode, SCALE_MODEL ) ) {
+		}
+		if( ImGui::RadioButton( "Rotate View", &currentMode, ROTATE_VIEW ) ) {
+		}
+		if( ImGui::RadioButton( "Translate View", &currentMode, TRANSLATE_VIEW ) ) {
+		}
+		if( ImGui::RadioButton( "Perspective", &currentMode, PERSPECTIVE ) ) {
 		}
 		if( ImGui::RadioButton( "Viewport", &currentMode, VIEWPORT ) ) {
 		}
@@ -654,23 +730,23 @@ void A2::resetValues()
 
 
 	modelGnomonArray[ 0 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 1 ] = vec4( 1.0f , 0.0f, 0.0f, 1.0f );
+	modelGnomonArray[ 1 ] = vec4( 0.25f , 0.0f, 0.0f, 1.0f );
 	modelGnomonArray[ 2 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 3 ] = vec4( 0.0f, 1.0f, 0.0f , 1.0f );
+	modelGnomonArray[ 3 ] = vec4( 0.0f, 0.25f, 0.0f , 1.0f );
 	modelGnomonArray[ 4 ] = vec4( 0.0f, 0.0f, 0.0f, 1.0f );
-	modelGnomonArray[ 5 ] = vec4( 0.0f, 0.0f, 1.0f , 1.0f );
+	modelGnomonArray[ 5 ] = vec4( 0.0f, 0.0f, 0.25f , 1.0f );
 
 	cumulativeModel = mat4(1.0);
 
-	interactionModes[0] = new RotateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[1] = new TranslateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[2] = new PerspectiveInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[3] = new RotateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[4] = new TranslateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
-	interactionModes[5] = new ScaleModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[0] = new RotateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[1] = new TranslateModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[2] = new ScaleModelInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[3] = new RotateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[4] = new TranslateViewInteraction(modelGnomonArray, cubeArray, cumulativeModel);
+	interactionModes[5] = new PerspectiveInteraction(modelGnomonArray, cubeArray, cumulativeModel);
 	interactionModes[6] = new ViewportInteraction(modelGnomonArray, cubeArray, cumulativeModel);
 
-	currentMode = ROTATE_VIEW;
+	currentMode = ROTATE_MODEL;
 	currentInteraction = interactionModes[currentMode];
 
 	leftButtonPressed = false;
