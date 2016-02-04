@@ -109,4 +109,6 @@ protected:
 
 	bool nearAndFarClipping(vec4 &vec1,vec4 &vec2);
 
+	bool clip(vec4 &A,vec4&B,vec4 P,vec4 n);
+
 };

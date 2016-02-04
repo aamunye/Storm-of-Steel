@@ -340,28 +340,23 @@ void A2::drawLine(
 	drawLine(vec2(v0[0],v0[1]),vec2(v1[0],v1[1]));
 }
 
-/*
-bool clip(vec4 &A,vec4&B){
-	float far = currentInteraction->pFar;
-	float near = currentInteraction->pNear;
-	vec4 P = vec4(0.0f,0.0f,near,1.0f);
-	vec4 n = vec4(0,0,1,0);
-	float wecA = dot((transformedCube[2*i]-P),n);
-	float wecB = dot((transformedCube[2*i+1]-P),n);
+bool A2::clip(vec4 &A,vec4&B,vec4 P,vec4 n){
+	float wecA = dot((A-P),n);
+	float wecB = dot((B-P),n);
 	if( wecA < 0 && wecB < 0 ){
-		bDrawCube[i]=false;
+		return false;
 	}
 	if (wecA >= 0 && wecB >= 0){
-		continue;
+		return true;
 	}
 	float t = wecA/(wecA-wecB);
 	if(wecA<0){
-		transformedCube[2*i] = transformedCube[2*i] + t *(transformedCube[2*i+1]-transformedCube[2*i]);
+		A = A + t *(B-A);
 	}else{
-		transformedCube[2*i+1] = transformedCube[2*i] + t *(transformedCube[2*i+1]-transformedCube[2*i]);
+		B = A + t *(B-A);
 	}
+	return true;
 }
-*/
 
 
 
@@ -388,8 +383,8 @@ void A2::appLogic()
 	}
 	for(int i=0;i<12;i++){
 		//nearAndFarClipping(transformedCube[2*i],transformedCube[2*i+1]);
-		float far = currentInteraction->pFar;
-		float near = currentInteraction->pNear;
+		/*
+
 		vec4 P = vec4(0.0f,0.0f,near,1.0f);
 		vec4 n = vec4(0,0,1,0);
 		float wecA = dot((transformedCube[2*i]-P),n);
@@ -406,18 +401,42 @@ void A2::appLogic()
 		}else{
 			transformedCube[2*i+1] = transformedCube[2*i] + t *(transformedCube[2*i+1]-transformedCube[2*i]);
 		}
+		*/
+		float far = currentInteraction->pFar;
+		float near = currentInteraction->pNear;
+		// far clipping
+		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,0.0f,near,1.0f),vec4(0,0,1,0));
+		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,0.0f,far,1.0f),vec4(0,0,-1,0));
+
+		transformedCube[2*i] = cumulProj * transformedCube[2*i];
+		transformedCube[2*i+1] = cumulProj * transformedCube[2*i+1];
 	}
 	for(int i=0;i<24;i++){
-		transformedCube[i] = cumulProj * transformedCube[i];
+
 		for(int j=0;j<4;j++){
 			if(transformedCube[i][3]==0)cout<<"panic"<<endl;
 			transformedCube[i][j]/=transformedCube[i][3];
 		}
 	}
 	for(int i=0;i<12;i++){
+		//right
+		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(1.0f,1.0f,1.0f,1.0f),vec4(-1,0,0,0));
+		//left
+		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(-1.0f,1.0f,1.0f,1.0f),vec4(1,0,0,0));
+
+		//top
+		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,1.0f,0.0f,1.0f),vec4(0,-1,0,0));
+
+		//bottom
+		bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,-1.0f,0.0f,1.0f),vec4(0,1,0,0));
+
+		//bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,0.0f,far,1.0f),vec4(0,0,-1,0));
+		//bDrawCube[i] &= clip(transformedCube[2*i],transformedCube[2*i+1],vec4(0.0f,0.0f,far,1.0f),vec4(0,0,-1,0));
+
+		transformToViewport(transformedCube[2*i]);
+		transformToViewport(transformedCube[2*i+1]);
+
 		if(bDrawCube[i]){
-			transformToViewport(transformedCube[2*i]);
-			transformToViewport(transformedCube[2*i+1]);
 			drawLine(transformedCube[2*i],transformedCube[2*i+1]);
 		}
 	}
