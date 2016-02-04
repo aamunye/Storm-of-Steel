@@ -451,8 +451,9 @@ void A2::guiLogic()
 
 		currentInteraction = interactionModes[ currentMode ];
 
-
-
+		ImGui::Text( "FOV: %.1f° ", currentInteraction->pFOV * 180 / M_PI );
+		ImGui::Text( "Near: %.1f ", currentInteraction->pNear );
+		ImGui::Text( "Far: %.1f ", currentInteraction->pFar );
 		ImGui::Text( "Framerate: %.1f FPS", ImGui::GetIO().Framerate );
 
 	ImGui::End();
