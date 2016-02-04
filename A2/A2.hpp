@@ -96,5 +96,18 @@ protected:
 	bool rightButtonPressed;
 
 	double previousMouseXPos;
+	double previousMouseYPos;
+
+	glm::vec2 viewportStart;
+	glm::vec2 viewportEnd;
+
+	glm::vec2 viewportArray[4];
+
+	void updateViewportArray();
+
+	void transformToViewport(vec2 &vec);
+	void transformToViewport(vec3 &vec);
+	void transformToViewport(vec4 &vec);
+
 
 };

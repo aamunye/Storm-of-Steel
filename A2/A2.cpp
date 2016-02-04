@@ -111,6 +111,40 @@ void A2::init()
 	rightButtonPressed = false;
 
 	previousMouseXPos = 0;
+
+	viewportStart = vec2(-0.9f, 0.9f);
+	viewportEnd = vec2( 0.9f, -0.9f);
+	//updateViewportArray();
+}
+
+//----------------------------------------------------------------------------------------
+void updateViewportArray() {
+
+}
+
+void A2::transformToViewport(vec2 &vec){
+	float x = vec.x;
+	float y = vec.y;
+	float xin = (x + 1)/2*(viewportEnd.x - viewportStart.x) + viewportStart.x;
+	float yin = (y + 1)/2*(viewportStart.y - viewportEnd.y) + viewportEnd.y;
+	vec.x = xin;
+	vec.y = yin;
+}
+void A2::transformToViewport(vec3 &vec){
+	float x = vec.x;
+	float y = vec.y;
+	float xin = (x + 1)/2*(viewportEnd.x - viewportStart.x) + viewportStart.x;
+	float yin = (y + 1)/2*(viewportStart.y - viewportEnd.y) + viewportEnd.y;
+	vec.x = xin;
+	vec.y = yin;
+}
+void A2::transformToViewport(vec4 &vec){
+	float x = vec.x;
+	float y = vec.y;
+	float xin = (x + 1)/2*(viewportEnd.x - viewportStart.x) + viewportStart.x;
+	float yin = (y + 1)/2*(viewportStart.y - viewportEnd.y) + viewportEnd.y;
+	vec.x = xin;
+	vec.y = yin;
 }
 
 //----------------------------------------------------------------------------------------
@@ -270,7 +304,7 @@ void A2::appLogic()
 	initLineData();
 
 	// Draw cube:
-	setLineColour(vec3(0.0f, 0.0f, 0.0f));
+	setLineColour(vec3(1.0f, 1.0f, 1.0f));
 	mat4 cumulView = currentInteraction->cumulativeView;
 	mat4 cumulProj = currentInteraction->cumulativeProj;
 
@@ -280,6 +314,7 @@ void A2::appLogic()
 		for(int j=0;j<4;j++){
 			transformedCube[i][j]/=transformedCube[i][3];
 		}
+		transformToViewport(transformedCube[i]);
 	}
 	for(int i=0;i<12;i++){
 		drawLine(transformedCube[2*i],transformedCube[2*i+1]);
@@ -293,6 +328,7 @@ void A2::appLogic()
 		for(int j=0;j<4;j++){
 			transformedModelGnomon[i][j]/=transformedModelGnomon[i][3];
 		}
+		transformToViewport(transformedModelGnomon[i]);
 	}
 
 	vec4 transformedWorldGnomon[6];
@@ -300,7 +336,19 @@ void A2::appLogic()
 		transformedWorldGnomon[i] = cumulProj * cumulView * modelGnomonArray[i];
 		for(int j=0;j<4;j++){
 			transformedWorldGnomon[i][j]/=transformedWorldGnomon[i][3];
+
 		}
+		//TODO cleanup
+		transformToViewport(transformedWorldGnomon[i]);
+		/*
+		float x = transformedWorldGnomon[i].x;
+		float y = transformedWorldGnomon[i].y;
+		float xin = (x + 1)/2*(viewportEnd.x - viewportStart.x) + viewportStart.x;
+		float yin = (y + 1)/2*(viewportStart.y - viewportEnd.y) + viewportEnd.y;
+		transformedWorldGnomon[i].x = xin;
+		transformedWorldGnomon[i].y = yin;
+		*/
+
 	}
 
 
@@ -331,6 +379,14 @@ void A2::appLogic()
 	drawLine(
 		transformedWorldGnomon[4],
 		0.25f*(transformedWorldGnomon[5]-transformedWorldGnomon[4])+transformedWorldGnomon[4]);
+
+		setLineColour(vec3(0.0f, 0.0f, 0.0f));
+
+		drawLine(vec2(viewportStart.x,viewportStart.y),vec2(viewportEnd.x,viewportStart.y));
+		drawLine(vec2(viewportEnd.x,viewportStart.y),vec2(viewportEnd.x,viewportEnd.y));
+		drawLine(vec2(viewportEnd.x,viewportEnd.y),vec2(viewportStart.x,viewportEnd.y));
+		drawLine(vec2(viewportStart.x,viewportEnd.y),vec2(viewportStart.x,viewportStart.y));
+
 
 }
 
@@ -498,6 +554,9 @@ void A2::resetValues()
 	leftButtonPressed = false;
 	centreButtonPressed = false;
 	rightButtonPressed = false;
+
+	viewportStart = vec2(-0.9f, 0.9f);
+	viewportEnd = vec2( 0.9f, -0.9f);
 }
 
 //----------------------------------------------------------------------------------------
@@ -522,10 +581,21 @@ bool A2::mouseMoveEvent (
 		double xPos,
 		double yPos
 ) {
+	cout<<"xPos:"<<xPos<<" yPos:"<<yPos<<endl;
+	cout<<"m_windowWidth:"<<m_windowWidth<<" m_windowHeight:"<<m_windowHeight<<endl;
 	bool eventHandled(false);
 	double xDiff = xPos - previousMouseXPos;
 
 	if( leftButtonPressed ){
+		if(currentMode == VIEWPORT){
+			float x = previousMouseXPos/m_windowWidth*2-1;
+			float y = previousMouseYPos/m_windowHeight*-2+1;
+			if(x<-1)x=-1;
+			if(x>1)x=1;
+			if(y<-1)y=-1;
+			if(y>1)y=1;
+			viewportEnd = vec2(x,y);
+		}
 		currentInteraction->left(xDiff);
 		eventHandled = true;
 	}
@@ -540,6 +610,7 @@ bool A2::mouseMoveEvent (
 
 
 	previousMouseXPos = xPos;
+	previousMouseYPos = yPos;
 
 	return eventHandled;
 }
@@ -560,6 +631,12 @@ bool A2::mouseButtonInputEvent (
 			if( button==GLFW_MOUSE_BUTTON_LEFT )
 			{
 				leftButtonPressed = true;
+				if(currentMode == VIEWPORT){
+					float x = previousMouseXPos/m_windowWidth*2-1;
+					float y = previousMouseYPos/m_windowHeight*-2+1;
+					viewportStart = vec2(x,y);
+					viewportEnd = vec2(x,y);
+				}
 				eventHandled = true;
 			}
 			else if( button==GLFW_MOUSE_BUTTON_MIDDLE )

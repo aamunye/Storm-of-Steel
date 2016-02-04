@@ -61,8 +61,14 @@ public:
   static glm::mat4 cumulativeProj;
 
   // In degrees
-  const float P_NEAR_MIN = 5 * M_PI / 180;
-  const float P_NEAR_MAX = 160 * M_PI / 180;
+  const float P_FOV_MIN = 5 * M_PI / 180;
+  const float P_FOV_MAX = 160 * M_PI / 180;
+
+  static glm::vec2 viewPortStart;
+  static glm::vec2 viewPortEnd;
+
+  static glm::vec2 viewPortArray[4];
+
 protected:
   glm::vec4 worldFrame[4]={
     vec4(1.0f,0.0f,0.0f,0.0f),

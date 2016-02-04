@@ -22,8 +22,13 @@ float Interaction::pNear;
 float Interaction::pFar;
 float Interaction::pFOV;
 
+glm::vec2 Interaction::viewPortStart;
+glm::vec2 Interaction::viewPortEnd;
+
+glm::vec2 Interaction::viewPortArray[4];
+
 void Interaction::updateCumulativeView() {
-  cumulativeView =  inverse(rotateViewMat) * inverse(translateViewMat) * originalViewMatrix;
+  cumulativeView = inverse(translateViewMat * rotateViewMat) * originalViewMatrix;
 }
 
 void Interaction::updateCumulativeProj() {
@@ -103,7 +108,11 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
   pFOV = 30.0f * M_PI / 180;;
 
   updateCumulativeProj();
-  //Projection Start////////////////////////////////////////////////////////////
+  //Projection End//////////////////////////////////////////////////////////////
+
+  // m_windowWidth
+  viewPortStart = vec2(-0.9f,0.9f);
+  viewPortEnd = vec2(0.9f,-0.9f);
 
 }
 
@@ -243,7 +252,7 @@ PerspectiveInteraction::PerspectiveInteraction( glm::vec4 modGnoArr[], glm::vec4
 void PerspectiveInteraction::left( float value ){
   //cout<<"PerspectiveInteraction left "<<value<<endl;
   float new_pFOV = pFOV + value * 0.001;
-  if(new_pFOV > P_NEAR_MIN && new_pFOV < P_NEAR_MAX) {
+  if(new_pFOV > P_FOV_MIN && new_pFOV < P_FOV_MAX) {
     pFOV += value * 0.001;
     updateCumulativeProj();
   }
