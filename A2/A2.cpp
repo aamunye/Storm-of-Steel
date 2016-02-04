@@ -125,24 +125,45 @@ void updateViewportArray() {
 void A2::transformToViewport(vec2 &vec){
 	float x = vec.x;
 	float y = vec.y;
-	float xin = (x + 1)/2*(viewportEnd.x - viewportStart.x) + viewportStart.x;
-	float yin = (y + 1)/2*(viewportStart.y - viewportEnd.y) + viewportEnd.y;
+
+	float smallX = (viewportStart.x < viewportEnd.x) ? viewportStart.x : viewportEnd.x;
+	float bigX = (viewportStart.x > viewportEnd.x) ? viewportStart.x : viewportEnd.x;
+
+	float smallY = (viewportStart.y < viewportEnd.y) ? viewportStart.y : viewportEnd.y;
+	float bigY = (viewportStart.y > viewportEnd.y) ? viewportStart.y : viewportEnd.y;
+
+	float xin = (x + 1)/2*abs(bigX - smallX) + smallX;
+	float yin = (y + 1)/2*abs(smallY - bigY) + smallY;
 	vec.x = xin;
 	vec.y = yin;
 }
 void A2::transformToViewport(vec3 &vec){
 	float x = vec.x;
 	float y = vec.y;
-	float xin = (x + 1)/2*(viewportEnd.x - viewportStart.x) + viewportStart.x;
-	float yin = (y + 1)/2*(viewportStart.y - viewportEnd.y) + viewportEnd.y;
+
+	float smallX = (viewportStart.x < viewportEnd.x) ? viewportStart.x : viewportEnd.x;
+	float bigX = (viewportStart.x > viewportEnd.x) ? viewportStart.x : viewportEnd.x;
+
+	float smallY = (viewportStart.y < viewportEnd.y) ? viewportStart.y : viewportEnd.y;
+	float bigY = (viewportStart.y > viewportEnd.y) ? viewportStart.y : viewportEnd.y;
+
+	float xin = (x + 1)/2*abs(bigX - smallX) + smallX;
+	float yin = (y + 1)/2*abs(smallY - bigY) + smallY;
 	vec.x = xin;
 	vec.y = yin;
 }
 void A2::transformToViewport(vec4 &vec){
 	float x = vec.x;
 	float y = vec.y;
-	float xin = (x + 1)/2*(viewportEnd.x - viewportStart.x) + viewportStart.x;
-	float yin = (y + 1)/2*(viewportStart.y - viewportEnd.y) + viewportEnd.y;
+
+	float smallX = (viewportStart.x < viewportEnd.x) ? viewportStart.x : viewportEnd.x;
+	float bigX = (viewportStart.x > viewportEnd.x) ? viewportStart.x : viewportEnd.x;
+
+	float smallY = (viewportStart.y < viewportEnd.y) ? viewportStart.y : viewportEnd.y;
+	float bigY = (viewportStart.y > viewportEnd.y) ? viewportStart.y : viewportEnd.y;
+
+	float xin = (x + 1)/2*abs(bigX - smallX) + smallX;
+	float yin = (y + 1)/2*abs(smallY - bigY) + smallY;
 	vec.x = xin;
 	vec.y = yin;
 }
@@ -698,6 +719,8 @@ bool A2::windowResizeEvent (
 ) {
 	bool eventHandled(false);
 
+	m_windowWidth = width;
+	m_windowHeight = height;
 	// Fill in with event handling code...
 
 	return eventHandled;
