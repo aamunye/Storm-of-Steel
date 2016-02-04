@@ -122,6 +122,24 @@ void updateViewportArray() {
 
 }
 
+bool A2::nearAndFarClipping(vec4 &vec1,vec4 &vec2){
+	float near = currentInteraction->pNear;
+	float far = currentInteraction->pFar;
+	if(vec1.z < near && vec2.z < near ){
+		// disappear
+		vec1 = vec4(0.0f,0.0f,0.0f,1.0f);
+		vec2 = vec4(0.0f,0.0f,0.0f,1.0f);
+		return true;
+	}
+	if(vec1.z > far && vec2.z > far ){
+		// disappear
+		vec1 = vec4(0.0f,0.0f,0.0f,1.0f);
+		vec2 = vec4(0.0f,0.0f,0.0f,1.0f);
+		return true;
+	}
+	return false;
+}
+
 void A2::transformToViewport(vec4 &vec){
 	float x = vec.x;
 	float y = vec.y;
@@ -302,12 +320,19 @@ void A2::appLogic()
 	vec4 transformedCube[24];
 	for(int i=0;i<24;i++){
 		transformedCube[i] = cumulProj * cumulView * cumulativeModel * cubeArray[i];
-		for(int j=0;j<4;j++){
-			transformedCube[i][j]/=transformedCube[i][3];
-		}
-		transformToViewport(transformedCube[i]);
 	}
 	for(int i=0;i<12;i++){
+		nearAndFarClipping(transformedCube[2*i],transformedCube[2*i+1]);
+	}
+	for(int i=0;i<24;i++){
+		for(int j=0;j<4;j++){
+			if(transformedCube[i][3]==0)cout<<"panic"<<endl;
+			transformedCube[i][j]/=transformedCube[i][3];
+		}
+	}
+	for(int i=0;i<12;i++){
+		transformToViewport(transformedCube[2*i]);
+		transformToViewport(transformedCube[2*i+1]);
 		drawLine(transformedCube[2*i],transformedCube[2*i+1]);
 	}
 

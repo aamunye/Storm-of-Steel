@@ -17,6 +17,6 @@ Interaction that has a left(), center and right() functions that is inherited.
 This allows me to modularize my matrix creation out.
 
 I finished all of the assignment specs except for the following:
-1) Creating a Viewport
-2) Clipping
-3) Screenshot
+1) Clipping
+- however finished near and far clipping
+2) Screenshot

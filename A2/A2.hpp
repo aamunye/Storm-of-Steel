@@ -107,7 +107,6 @@ protected:
 
 	void transformToViewport(vec4 &vec);
 
-	void nearAndFarClipping(vec4 &vec);
-
+	bool nearAndFarClipping(vec4 &vec1,vec4 &vec2);
 
 };

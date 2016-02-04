@@ -105,8 +105,8 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
 
   //Projection Start////////////////////////////////////////////////////////////
   cumulativeProj = mat4(1.0f);
-  pNear = 5.0f;
-  pFar = 500.0f;
+  pNear = 1.0f;
+  pFar = 10.0f;
   pFOV = 30.0f * M_PI / 180;;
 
   updateCumulativeProj();

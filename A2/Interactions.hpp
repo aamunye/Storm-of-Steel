@@ -69,6 +69,10 @@ public:
 
   static glm::vec2 viewPortArray[4];
 
+  static float pNear;
+  static float pFar;
+  static float pFOV;
+
 protected:
   glm::vec4 worldFrame[4]={
     vec4(1.0f,0.0f,0.0f,0.0f),
@@ -106,9 +110,7 @@ protected:
   void updateCumulativeView();
 
   void updateCumulativeProj();
-  static float pNear;
-  static float pFar;
-  static float pFOV;
+
 
 
 
