@@ -23,7 +23,7 @@ float Interaction::pFar;
 float Interaction::pFOV;
 
 void Interaction::updateCumulativeView() {
-  cumulativeView = translateViewMat * rotateViewMat * originalViewMatrix;
+  cumulativeView =  inverse(rotateViewMat) * inverse(translateViewMat) * originalViewMatrix;
 }
 
 void Interaction::updateCumulativeProj() {
@@ -213,11 +213,11 @@ void Interaction::right( float value ){
 
 RotateViewInteraction::RotateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void RotateViewInteraction::left( float value ){
-  rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(1.0f,0.0f,0.0f));
+  rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(0.0f,1.0f,0.0f));
   updateCumulativeView();
 }
 void RotateViewInteraction::centre( float value ){
-  rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(0.0f,1.0f,0.0f));
+  rotateViewMat = glm::rotate(rotateViewMat, (float)(value)*0.003f,vec3(1.0f,0.0f,0.0f));
   updateCumulativeView();
 }
 void RotateViewInteraction::right( float value ){
@@ -227,15 +227,15 @@ void RotateViewInteraction::right( float value ){
 
 TranslateViewInteraction::TranslateViewInteraction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 &cumulMod ):Interaction(modGnoArr,cubeArr,cumulMod){}
 void TranslateViewInteraction::left( float value ){
-  translateViewMat *= glm::translate(glm::vec3(value * -0.003f,0.0f,0.0f));
+  translateViewMat *= glm::translate(glm::vec3(value * 0.003f,0.0f,0.0f));
   updateCumulativeView();
 }
 void TranslateViewInteraction::centre( float value ){
-  translateViewMat *= glm::translate(glm::vec3(0.0f, value * -0.003f, 0.0f));
+  translateViewMat *= glm::translate(glm::vec3(0.0f, value * 0.003f, 0.0f));
   updateCumulativeView();
 }
 void TranslateViewInteraction::right( float value ){
-  translateViewMat *= glm::translate(glm::vec3(0.0f, 0.0f, value * -0.003f));
+  translateViewMat *= glm::translate(glm::vec3(0.0f, 0.0f, value * 0.003f));
   updateCumulativeView();
 }
 
