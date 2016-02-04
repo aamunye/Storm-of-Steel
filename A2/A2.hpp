@@ -105,9 +105,9 @@ protected:
 
 	void updateViewportArray();
 
-	void transformToViewport(vec2 &vec);
-	void transformToViewport(vec3 &vec);
 	void transformToViewport(vec4 &vec);
+
+	void nearAndFarClipping(vec4 &vec);
 
 
 };

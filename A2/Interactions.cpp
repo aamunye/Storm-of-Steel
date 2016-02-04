@@ -43,11 +43,13 @@ void Interaction::updateCumulativeProj() {
   //cout<<"before"<<endl;
   //cout<<cumulativeProj<<endl;
   cumulativeProj = mat4(
-    vec4(1/(tan(pFOV/2)),0,0,0),
-    vec4(0,1/tan(pFOV/2),0,0),
-    vec4(0,0,(pFar+pNear)/(pFar - pNear),-2*pFar*pNear/(pFar-pNear)),
-    vec4(0,0,1,0)
+    vec4(1/(tan(pFOV/2)),0                 ,0                             ,0),
+    vec4(0              ,1/tan(pFOV/2)     ,0                             ,0),
+    vec4(0              ,0                 ,(pFar+pNear)/(pFar - pNear)   ,-2*pFar*pNear/(pFar-pNear)),
+    vec4(0              ,0                 ,1                             ,0)
   );
+
+  cumulativeProj = transpose(cumulativeProj);
   //cumulativeProj = transpose(cumulativeProj);
 
   /*
@@ -75,7 +77,7 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
 
   //View Start//////////////////////////////////////////////////////////////////
   vec3 lookAt = vec3(0.0f,0.0f,0.0f); // also the origin
-  vec3 lookFrom = vec3(0.0f,0.0f,5.0f);
+  vec3 lookFrom = vec3(0.0f,0.0f,10.0f);
 
   vec3 up = vec3(0.0f,1.0f,0.0f);
 
@@ -103,7 +105,7 @@ Interaction::Interaction( glm::vec4 modGnoArr[], glm::vec4 cubeArr[], glm::mat4 
 
   //Projection Start////////////////////////////////////////////////////////////
   cumulativeProj = mat4(1.0f);
-  pNear = 1.0f;
+  pNear = 5.0f;
   pFar = 500.0f;
   pFOV = 30.0f * M_PI / 180;;
 
