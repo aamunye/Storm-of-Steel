@@ -1,0 +1,22 @@
+Compiling:
+The compiling process has not been modified.
+To compile and run the program, make sure that the objects in the cs489-a0a1
+folder have been built first, then run the following commands from the A1
+directory, enter:
+  premake4 clean
+  premake4 gmake
+  make
+  ./A1
+
+As for this program, it was written and tested on the gl32.student.cs machine.
+
+Manual:
+I added an Interactions.hpp and .cpp files in this project.  They hold the
+functional information for all the different modes.  There is a base class
+Interaction that has a left(), center and right() functions that is inherited.
+This allows me to modularize my matrix creation out.
+
+I finished all of the assignment specs except for the following:
+1) Creating a Viewport
+2) Clipping
+3) Screenshot
