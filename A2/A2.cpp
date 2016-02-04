@@ -129,14 +129,55 @@ bool A2::nearAndFarClipping(vec4 &vec1,vec4 &vec2){
 		// disappear
 		vec1 = vec4(0.0f,0.0f,0.0f,1.0f);
 		vec2 = vec4(0.0f,0.0f,0.0f,1.0f);
-		return true;
+		return false;
 	}
 	if(vec1.z > far && vec2.z > far ){
 		// disappear
 		vec1 = vec4(0.0f,0.0f,0.0f,1.0f);
 		vec2 = vec4(0.0f,0.0f,0.0f,1.0f);
+		return false;
+	}
+	if(vec1.z <= far && vec1.z >= near &&  vec2.z <= far && vec2.z >= near){
 		return true;
 	}
+
+	vec4 &vecBiggerZ = (vec1.z > vec2.z) ? vec1 : vec2;
+	vec4 &vecSmallerZ = (vec1.z > vec2.z) ? vec2 : vec1;
+
+	float tBigger = 0.0f;
+	float tSmaller = 0.0f;
+
+	bool biggerSet = false;
+	bool smallerSet = false;
+
+	vec4 vecSmallerZcopy;
+	vec4 vecBiggerZcopy;
+
+	cout<<endl;
+	if(vecBiggerZ.z > far){
+		tBigger = (far - vecSmallerZ.z)/(vecBiggerZ.z - vecSmallerZ.z);
+		vecBiggerZcopy =  vecBiggerZ + tBigger * (vecSmallerZ-vecBiggerZ);
+		biggerSet = true;
+	}
+	if(vecSmallerZ.z < near){
+		tSmaller = (near - vecBiggerZ.z)/(vecSmallerZ.z - vecBiggerZ.z);
+		vecSmallerZcopy =  vecSmallerZ + tSmaller * (vecBiggerZ - vecSmallerZ);
+		smallerSet = true;
+	}
+
+	cout<<"before"<<endl;
+
+	cout<<vecBiggerZ<<endl;
+	cout<<vecSmallerZ<<endl;
+
+	if(biggerSet)vecBiggerZ = vecBiggerZcopy;
+	if(smallerSet)vecSmallerZ = vecSmallerZcopy;
+
+	cout<<"after"<<endl;
+
+	cout<<vecBiggerZ<<endl;
+	cout<<vecSmallerZ<<endl;
+
 	return false;
 }
 
@@ -299,6 +340,29 @@ void A2::drawLine(
 	drawLine(vec2(v0[0],v0[1]),vec2(v1[0],v1[1]));
 }
 
+/*
+bool clip(vec4 &A,vec4&B){
+	float far = currentInteraction->pFar;
+	float near = currentInteraction->pNear;
+	vec4 P = vec4(0.0f,0.0f,near,1.0f);
+	vec4 n = vec4(0,0,1,0);
+	float wecA = dot((transformedCube[2*i]-P),n);
+	float wecB = dot((transformedCube[2*i+1]-P),n);
+	if( wecA < 0 && wecB < 0 ){
+		bDrawCube[i]=false;
+	}
+	if (wecA >= 0 && wecB >= 0){
+		continue;
+	}
+	float t = wecA/(wecA-wecB);
+	if(wecA<0){
+		transformedCube[2*i] = transformedCube[2*i] + t *(transformedCube[2*i+1]-transformedCube[2*i]);
+	}else{
+		transformedCube[2*i+1] = transformedCube[2*i] + t *(transformedCube[2*i+1]-transformedCube[2*i]);
+	}
+}
+*/
+
 
 
 //----------------------------------------------------------------------------------------
@@ -313,27 +377,49 @@ void A2::appLogic()
 	initLineData();
 
 	// Draw cube:
+	bool bDrawCube[12];
+	for(int i=0;i<12;i++)bDrawCube[i]=true;
 	setLineColour(vec3(1.0f, 1.0f, 1.0f));
 	mat4 cumulView = currentInteraction->cumulativeView;
 	mat4 cumulProj = currentInteraction->cumulativeProj;
-
 	vec4 transformedCube[24];
 	for(int i=0;i<24;i++){
-		transformedCube[i] = cumulProj * cumulView * cumulativeModel * cubeArray[i];
+		transformedCube[i] = cumulView * cumulativeModel * cubeArray[i];
 	}
 	for(int i=0;i<12;i++){
-		nearAndFarClipping(transformedCube[2*i],transformedCube[2*i+1]);
+		//nearAndFarClipping(transformedCube[2*i],transformedCube[2*i+1]);
+		float far = currentInteraction->pFar;
+		float near = currentInteraction->pNear;
+		vec4 P = vec4(0.0f,0.0f,near,1.0f);
+		vec4 n = vec4(0,0,1,0);
+		float wecA = dot((transformedCube[2*i]-P),n);
+		float wecB = dot((transformedCube[2*i+1]-P),n);
+		if( wecA < 0 && wecB < 0 ){
+			bDrawCube[i]=false;
+		}
+		if (wecA >= 0 && wecB >= 0){
+			continue;
+		}
+		float t = wecA/(wecA-wecB);
+		if(wecA<0){
+			transformedCube[2*i] = transformedCube[2*i] + t *(transformedCube[2*i+1]-transformedCube[2*i]);
+		}else{
+			transformedCube[2*i+1] = transformedCube[2*i] + t *(transformedCube[2*i+1]-transformedCube[2*i]);
+		}
 	}
 	for(int i=0;i<24;i++){
+		transformedCube[i] = cumulProj * transformedCube[i];
 		for(int j=0;j<4;j++){
 			if(transformedCube[i][3]==0)cout<<"panic"<<endl;
 			transformedCube[i][j]/=transformedCube[i][3];
 		}
 	}
 	for(int i=0;i<12;i++){
-		transformToViewport(transformedCube[2*i]);
-		transformToViewport(transformedCube[2*i+1]);
-		drawLine(transformedCube[2*i],transformedCube[2*i+1]);
+		if(bDrawCube[i]){
+			transformToViewport(transformedCube[2*i]);
+			transformToViewport(transformedCube[2*i+1]);
+			drawLine(transformedCube[2*i],transformedCube[2*i+1]);
+		}
 	}
 
 
