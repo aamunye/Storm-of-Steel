@@ -6,7 +6,7 @@ directory, enter:
   premake4 clean
   premake4 gmake
   make
-  ./A1
+  ./A2
 
 As for this program, it was written and tested on the gl32.student.cs machine.
 
