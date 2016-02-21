@@ -4,7 +4,7 @@
 
 #include <sstream>
 #include <iostream>
-#include <thread>
+#include <cstdio>
 
 #include <imgui/imgui.h>
 #include <imgui_impl_glfw_gl3.h>
@@ -59,7 +59,7 @@ void CS488Window::errorCallback(
 	stringstream msg;
 	msg << "GLFW Error Code: " << error << "\n" <<
 			"GLFW Error Description: " << description << "\n";
-	throw Exception(msg.str());
+    cout << msg.str();
 }
 
 //----------------------------------------------------------------------------------------
@@ -71,6 +71,7 @@ void CS488Window::windowResizeCallBack (
 		int width,
 		int height
 ) {
+	getInstance()->CS488Window::windowResizeEvent(width, height);
 	getInstance()->windowResizeEvent(width, height);
 }
 
@@ -148,6 +149,9 @@ bool CS488Window::windowResizeEvent (
 		int width,
 		int height
 ) {
+	m_windowWidth = width;
+	m_windowHeight = height;
+
 	return false;
 }
 
@@ -327,7 +331,8 @@ void CS488Window::run (
 	glfwSetErrorCallback(errorCallback);
 
     if (glfwInit() == GL_FALSE) {
-	    throw Exception("Call to glfwInit() failed.");
+        fprintf(stderr, "Call to glfwInit() failed.\n");
+        std::abort();
     }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
@@ -345,13 +350,15 @@ void CS488Window::run (
     m_monitor = glfwGetPrimaryMonitor();
     if (m_monitor == NULL) {
         glfwTerminate();
-        throw Exception("Error retrieving primary m_monitor.");
+        fprintf(stderr, "Error retrieving primary monitor.\n");
+        std::abort();
     }
 
     m_window = glfwCreateWindow(width, height, windowTitle.c_str(), NULL, NULL);
     if (m_window == NULL) {
         glfwTerminate();
-        throw Exception("Call to glfwCreateWindow failed.");
+        fprintf(stderr, "Call to glfwCreateWindow failed.\n");
+        std::abort();
     }
 
     // Get default framebuffer dimensions in order to support high-definition
