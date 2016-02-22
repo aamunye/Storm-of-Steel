@@ -9,6 +9,7 @@
 
 #include <glm/glm.hpp>
 #include <memory>
+#include <stack>
 
 struct LightSource {
 	glm::vec3 position;
@@ -49,6 +50,7 @@ protected:
 	void uploadCommonSceneUniforms();
 	void renderSceneGraph(const SceneNode &node);
 	void renderArcCircle();
+	void traverseNode(const SceneNode &node);
 
 	glm::mat4 m_perspective;
 	glm::mat4 m_view;
@@ -77,4 +79,10 @@ protected:
 	std::string m_luaSceneFile;
 
 	std::shared_ptr<SceneNode> m_rootNode;
+
+	std::stack<glm::mat4> matrixStack;
+	void pushMatrix();
+	void popMatrix();
+	void multMatrix(glm::mat4 mat);
+	void resetMatrix();
 };

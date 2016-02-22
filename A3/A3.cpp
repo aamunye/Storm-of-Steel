@@ -88,6 +88,9 @@ void A3::init()
 	// all vertex data resources.  This is fine since we already copied this data to
 	// VBOs on the GPU.  We have no use for storing vertex data on the CPU side beyond
 	// this point.
+
+
+	matrixStack.push(mat4(1.0f));
 }
 
 //----------------------------------------------------------------------------------------
@@ -414,7 +417,7 @@ void A3::renderSceneGraph(const SceneNode & root) {
 	// subclasses, that renders the subtree rooted at every node.  Or you
 	// could put a set of mutually recursive functions in this class, which
 	// walk down the tree from nodes of different types.
-
+	/*
 	for (const SceneNode * node : root.children) {
 
 		if (node->m_nodeType != NodeType::GeometryNode)
@@ -433,10 +436,61 @@ void A3::renderSceneGraph(const SceneNode & root) {
 		glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
 		m_shader.disable();
 	}
+	*/
+
+	multMatrix(m_view);
+	traverseNode(root);
 
 	glBindVertexArray(0);
 	CHECK_GL_ERRORS;
 }
+
+void A3::traverseNode(const SceneNode &node) {
+	pushMatrix();
+	multMatrix(node.trans);
+	for (const SceneNode * child : node.children) {
+		if (child->m_nodeType == NodeType::GeometryNode){
+			const GeometryNode * geometryNode = static_cast<const GeometryNode *>(child);
+			updateShaderUniforms(m_shader, *geometryNode, matrixStack.top());
+
+
+			// Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
+			BatchInfo batchInfo = m_batchInfoMap[geometryNode->meshId];
+
+			//-- Now render the mesh:
+			m_shader.enable();
+			glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
+			m_shader.disable();
+		}
+
+		traverseNode(*child);
+
+	}
+	popMatrix();
+
+}
+
+void A3::pushMatrix() {
+	if(!matrixStack.empty()) {
+		matrixStack.push(matrixStack.top());
+	}
+}
+
+void A3::popMatrix() {
+	matrixStack.pop();
+}
+
+void A3::multMatrix(mat4 mat) {
+	matrixStack.top() *= mat;
+}
+
+void A3::resetMatrix() {
+	while(!matrixStack.empty()) {
+		matrixStack.pop();
+	}
+	matrixStack.push(mat4(1.0f));
+}
+
 
 //----------------------------------------------------------------------------------------
 // Draw the trackball circle.
@@ -556,6 +610,10 @@ bool A3::keyInputEvent (
 	if( action == GLFW_PRESS ) {
 		if( key == GLFW_KEY_M ) {
 			show_gui = !show_gui;
+			eventHandled = true;
+		}
+		if ( key == GLFW_KEY_Q ) {
+			glfwSetWindowShouldClose(m_window, GL_TRUE);
 			eventHandled = true;
 		}
 	}
