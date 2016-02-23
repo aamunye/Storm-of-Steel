@@ -85,4 +85,28 @@ protected:
 	void popMatrix();
 	void multMatrix(glm::mat4 mat);
 	void resetMatrix();
+
+	int currentMode;
+
+	void resetPosition();
+	void resetOrientation();
+	void resetJoints();
+	void resetAll();
+
+	void undoChange();
+	void redoChange();
+
+	void drawCircle();
+	void zBuffer();
+	void backCull();
+	void frontCull();
+
+	bool leftButtonPressed;
+	bool centreButtonPressed;
+	bool rightButtonPressed;
+
+	double previousMouseXPos;
+	double previousMouseYPos;
+
+	glm::mat4 translationMatrix;
 };

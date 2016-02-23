@@ -91,6 +91,14 @@ void A3::init()
 
 
 	matrixStack.push(mat4(1.0f));
+
+	currentMode = 0;
+
+	leftButtonPressed = false;
+	centreButtonPressed = false;
+	rightButtonPressed = false;
+
+	translationMatrix = mat4(1.0f);
 }
 
 //----------------------------------------------------------------------------------------
@@ -324,19 +332,63 @@ void A3::guiLogic()
 	}
 
 	static bool showDebugWindow(true);
-	ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize);
+	ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_MenuBar);
 	float opacity(0.5f);
 
-	ImGui::Begin("Properties", &showDebugWindow, ImVec2(100,100), opacity,
+
+	ImGui::Begin("Menu", &showDebugWindow, ImVec2(100,100), opacity,
 			windowFlags);
+		if (ImGui::BeginMenuBar()) {
+			if (ImGui::BeginMenu("Application")) {
+				if(ImGui::MenuItem("Reset Position", "I")) {
+					resetPosition();
+				}
+				if(ImGui::MenuItem("Reset Orientation", "O")) {
+					resetOrientation();
+				}
+				if(ImGui::MenuItem("Reset Joints", "N")) {
+					resetJoints();
+				}
+				if(ImGui::MenuItem("Reset All", "A")) {
+					resetAll();
+				}
+				if(ImGui::MenuItem("Quit", "Q")) {
+					glfwSetWindowShouldClose(m_window, GL_TRUE);
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Edit")) {
+				if(ImGui::MenuItem("Undo", "U")) {
+					undoChange();
+				}
+				if(ImGui::MenuItem("Redo", "R")) {
+					redoChange();
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Options")) {
+				if(ImGui::MenuItem("Circle", "C")) {
+					drawCircle();
+				}
+				if(ImGui::MenuItem("Z-buffer", "Z")) {
+					zBuffer();
+				}
+				if(ImGui::MenuItem("Backface culling", "B")) {
+					backCull();
+				}
+				if(ImGui::MenuItem("Frontface culling", "F")) {
+					frontCull();
+				}
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
 
 
-		// Add more gui elements here here ...
 
-
-		// Create Button, and check if it was clicked:
-		if( ImGui::Button( "Quit Application" ) ) {
-			glfwSetWindowShouldClose(m_window, GL_TRUE);
+		if( ImGui::RadioButton( "Position/Orientation\t(P)", &currentMode, 0 ) ) {
+		}
+		if( ImGui::RadioButton( "Joints\t(J)", &currentMode, 1 ) ) {
 		}
 
 		ImGui::Text( "Framerate: %.1f FPS", ImGui::GetIO().Framerate );
@@ -438,8 +490,14 @@ void A3::renderSceneGraph(const SceneNode & root) {
 	}
 	*/
 
+	//pushMatrix();
 	multMatrix(m_view);
+	multMatrix(translationMatrix);
+	//cout<<"translupdateShaderUniformsationMatrix "<<translationMatrix<<endl;
 	traverseNode(root);
+
+	translationMatrix = mat4(1.0f);
+	//popMatrix();
 
 	glBindVertexArray(0);
 	CHECK_GL_ERRORS;
@@ -491,6 +549,55 @@ void A3::resetMatrix() {
 	matrixStack.push(mat4(1.0f));
 }
 
+void A3::resetPosition() {
+	//TODO
+	cout<<"resetPosition"<<endl;
+}
+
+void A3::resetOrientation() {
+	//TODO
+	cout<<"resetOrientation"<<endl;
+}
+
+void A3::resetJoints() {
+	//TODO
+	cout<<"resetJoints"<<endl;
+}
+
+void A3::resetAll() {
+	//TODO
+	cout<<"resetAll"<<endl;
+}
+
+void A3::undoChange() {
+	//TODO
+	cout<<"undoChange"<<endl;
+}
+
+void A3::redoChange() {
+	//TODO
+	cout<<"redoChange"<<endl;
+}
+
+void A3::drawCircle() {
+	//TODO
+	cout<<"drawCircle"<<endl;
+}
+
+void A3::zBuffer() {
+	//TODO
+	cout<<"zBuffer"<<endl;
+}
+
+void A3::backCull() {
+	//TODO
+	cout<<"backCull"<<endl;
+}
+
+void A3::frontCull() {
+	//TODO
+	cout<<"frontCull"<<endl;
+}
 
 //----------------------------------------------------------------------------------------
 // Draw the trackball circle.
@@ -548,6 +655,40 @@ bool A3::mouseMoveEvent (
 	bool eventHandled(false);
 
 	// Fill in with event handling code...
+	double xDiff = xPos - previousMouseXPos;
+	double yDiff = yPos - previousMouseYPos;
+
+	cout<<"xDiff "<<xDiff<<" yDiff "<<yDiff<<endl;
+
+	if ( currentMode == 0 ) {
+		//Position/Orientation
+		if( leftButtonPressed ){
+			translationMatrix *= glm::translate(glm::mat4(1.0f),glm::vec3(xDiff/2000,-yDiff/2000,0));
+			eventHandled = true;
+		}
+		if( centreButtonPressed ){
+			translationMatrix *= glm::translate(glm::mat4(1.0f),glm::vec3(0,0,-yDiff/2000));
+			eventHandled = true;
+		}
+		if( rightButtonPressed ){
+			eventHandled = true;
+		}
+	} else if ( currentMode == 1 ) {
+		//Joints
+		if( leftButtonPressed ){
+			eventHandled = true;
+		}
+		if( centreButtonPressed ){
+			eventHandled = true;
+		}
+		if( rightButtonPressed ){
+			eventHandled = true;
+		}
+	}
+
+	cout<<"here"<<endl;
+	previousMouseXPos = xPos;
+	previousMouseYPos = yPos;
 
 	return eventHandled;
 }
@@ -556,17 +697,54 @@ bool A3::mouseMoveEvent (
 /*
  * Event handler.  Handles mouse button events.
  */
-bool A3::mouseButtonInputEvent (
-		int button,
-		int actions,
-		int mods
-) {
-	bool eventHandled(false);
+ bool A3::mouseButtonInputEvent (
+ 		int button,
+ 		int actions,
+ 		int mods
+ ) {
+ 	bool eventHandled(false);
 
-	// Fill in with event handling code...
+ 	if (actions == GLFW_PRESS) {
+ 		if (!ImGui::IsMouseHoveringAnyWindow()) {
+ 			if( button==GLFW_MOUSE_BUTTON_LEFT )
+ 			{
+ 				leftButtonPressed = true;
+ 				eventHandled = true;
+ 			}
+ 			else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
+ 			{
+ 				centreButtonPressed = true;
+ 				eventHandled = true;
+ 			}
+ 			else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+ 			{
+ 				rightButtonPressed = true;
+ 				eventHandled = true;
+ 			}
+ 		}
 
-	return eventHandled;
-}
+ 	}
+ 	if (actions == GLFW_RELEASE) {
+		translationMatrix = mat4(1.0f);
+ 		if( button==GLFW_MOUSE_BUTTON_LEFT )
+ 		{
+ 			leftButtonPressed = false;
+ 			eventHandled = true;
+ 		}
+ 		else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
+ 		{
+ 			centreButtonPressed = false;
+ 			eventHandled = true;
+ 		}
+ 		else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+ 		{
+ 			rightButtonPressed = false;
+ 			eventHandled = true;
+ 		}
+ 	}
+
+ 	return eventHandled;
+ }
 
 //----------------------------------------------------------------------------------------
 /*
@@ -614,6 +792,64 @@ bool A3::keyInputEvent (
 		}
 		if ( key == GLFW_KEY_Q ) {
 			glfwSetWindowShouldClose(m_window, GL_TRUE);
+			eventHandled = true;
+		}
+		if ( key == GLFW_KEY_P ) {
+			currentMode = 0;
+			eventHandled = true;
+		}
+		if ( key == GLFW_KEY_J ) {
+			currentMode = 1;
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_I ) {
+			resetPosition();
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_O ) {
+			resetOrientation();
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_N ) {
+			resetJoints();
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_A ) {
+			resetAll();
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_U ) {
+			undoChange();
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_R ) {
+			redoChange();
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_C ) {
+			drawCircle();
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_Z ) {
+			zBuffer();
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_B ) {
+			backCull();
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_F ) {
+			frontCull();
 			eventHandled = true;
 		}
 	}
