@@ -22,9 +22,9 @@ SceneNode::SceneNode(const std::string& name)
 	m_nodeType(NodeType::SceneNode),
 	trans(mat4()),
 	isSelected(false),
-	m_nodeId(nodeInstanceCount++)
+	m_nodeId(nodeInstanceCount++),
+  parentJoint(-1)
 {
-
 }
 
 //---------------------------------------------------------------------------------------
@@ -33,7 +33,8 @@ SceneNode::SceneNode(const SceneNode & other)
 	: m_nodeType(other.m_nodeType),
 	  m_name(other.m_name),
 	  trans(other.trans),
-	  invtrans(other.invtrans)
+	  invtrans(other.invtrans),
+    parentJoint(other.parentJoint)
 {
 	for(SceneNode * child : other.children) {
 		this->children.push_front(new SceneNode(*child));
@@ -46,6 +47,8 @@ SceneNode::~SceneNode() {
 		delete child;
 	}
 }
+
+
 
 //---------------------------------------------------------------------------------------
 void SceneNode::set_transform(const glm::mat4& m) {
@@ -66,6 +69,11 @@ const glm::mat4& SceneNode::get_inverse() const {
 //---------------------------------------------------------------------------------------
 void SceneNode::add_child(SceneNode* child) {
 	children.push_back(child);
+}
+
+void SceneNode::set_parent_joint(unsigned int m_Id) {
+  //cout<<"Setting "<<m_Id<<" for "<<m_nodeId<<endl;
+  parentJoint = m_Id;
 }
 
 //---------------------------------------------------------------------------------------

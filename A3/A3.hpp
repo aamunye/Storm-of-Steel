@@ -5,7 +5,12 @@
 #include "cs488-framework/ShaderProgram.hpp"
 #include "cs488-framework/MeshConsolidator.hpp"
 
+
+
 #include "SceneNode.hpp"
+
+#include "GeometryNode.hpp"
+#include "JointNode.hpp"
 
 #include <glm/glm.hpp>
 #include <memory>
@@ -48,9 +53,9 @@ protected:
 
 	void initPerspectiveMatrix();
 	void uploadCommonSceneUniforms();
-	void renderSceneGraph(const SceneNode &node);
+	void renderSceneGraph(SceneNode &node);
 	void renderArcCircle();
-	void traverseNode(const SceneNode &node);
+	void traverseNode(SceneNode &node, SceneNode &root);
 
 	glm::mat4 m_perspective;
 	glm::mat4 m_view;
@@ -109,4 +114,21 @@ protected:
 	double previousMouseYPos;
 
 	glm::mat4 translationMatrix;
+	glm::mat4 rotationMatrix;
+
+	bool circleAppear;
+	bool zBufferEnabled;
+	bool cullFront;
+	bool cullBack;
+
+	bool do_picking;
+	void updateShaderUniforms(
+			 const ShaderProgram & shader,
+			 const GeometryNode & node,
+			 const glm::mat4 & viewMatrix,
+			 const glm::mat4 & matrixStack,
+			 const SceneNode &root,
+			 const glm::mat4 & rotationMatrix,
+			 const glm::mat4 & translationMatrix
+	);
 };

@@ -13,6 +13,8 @@ using namespace std;
 #include <glm/gtx/io.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <cmath>
+
 using namespace glm;
 
 static bool show_gui = true;
@@ -99,6 +101,14 @@ void A3::init()
 	rightButtonPressed = false;
 
 	translationMatrix = mat4(1.0f);
+	rotationMatrix = mat4(1.0f);
+
+	circleAppear = true;
+	zBufferEnabled = true;
+
+	cullFront = false;
+	cullBack = true;
+	do_picking = false;
 }
 
 //----------------------------------------------------------------------------------------
@@ -283,23 +293,29 @@ void A3::uploadCommonSceneUniforms() {
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(m_perspective));
 		CHECK_GL_ERRORS;
 
+		location = m_shader.getUniformLocation("picking");
+		glUniform1i( location, do_picking );
 
-		//-- Set LightSource uniform for the scene:
-		{
-			location = m_shader.getUniformLocation("light.position");
-			glUniform3fv(location, 1, value_ptr(m_light.position));
-			location = m_shader.getUniformLocation("light.rgbIntensity");
-			glUniform3fv(location, 1, value_ptr(m_light.rgbIntensity));
-			CHECK_GL_ERRORS;
+
+		if ( !do_picking ) {
+			//-- Set LightSource uniform for the scene:
+			{
+				location = m_shader.getUniformLocation("light.position");
+				glUniform3fv(location, 1, value_ptr(m_light.position));
+				location = m_shader.getUniformLocation("light.rgbIntensity");
+				glUniform3fv(location, 1, value_ptr(m_light.rgbIntensity));
+				CHECK_GL_ERRORS;
+			}
+
+			//-- Set background light ambient intensity
+			{
+				location = m_shader.getUniformLocation("ambientIntensity");
+				vec3 ambientIntensity(0.05f);
+				glUniform3fv(location, 1, value_ptr(ambientIntensity));
+				CHECK_GL_ERRORS;
+			}
 		}
 
-		//-- Set background light ambient intensity
-		{
-			location = m_shader.getUniformLocation("ambientIntensity");
-			vec3 ambientIntensity(0.05f);
-			glUniform3fv(location, 1, value_ptr(ambientIntensity));
-			CHECK_GL_ERRORS;
-		}
 	}
 	m_shader.disable();
 }
@@ -367,17 +383,17 @@ void A3::guiLogic()
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Options")) {
-				if(ImGui::MenuItem("Circle", "C")) {
-					drawCircle();
+				if(ImGui::MenuItem("Circle", "C", &circleAppear, true)) {
+					//drawCircle();
 				}
-				if(ImGui::MenuItem("Z-buffer", "Z")) {
-					zBuffer();
+				if(ImGui::MenuItem("Z-buffer", "Z", &zBufferEnabled, true)) {
+					//zBuffer();
 				}
-				if(ImGui::MenuItem("Backface culling", "B")) {
-					backCull();
+				if(ImGui::MenuItem("Backface culling", "B", &cullBack, true)) {
+					//backCull();
 				}
-				if(ImGui::MenuItem("Frontface culling", "F")) {
-					frontCull();
+				if(ImGui::MenuItem("Frontface culling", "F", &cullFront, true)) {
+					//frontCull();
 				}
 				ImGui::EndMenu();
 			}
@@ -398,19 +414,26 @@ void A3::guiLogic()
 
 //----------------------------------------------------------------------------------------
 // Update mesh specific shader uniforms:
-static void updateShaderUniforms(
-		const ShaderProgram & shader,
-		const GeometryNode & node,
-		const glm::mat4 & viewMatrix
+void A3::updateShaderUniforms(
+		const  ShaderProgram & shader,
+		const  GeometryNode & node,
+		const  glm::mat4 & viewMatrix,
+		const  glm::mat4 & matrixStack,
+		const  SceneNode &root,
+		const  glm::mat4 & rotationMatrix,
+		const glm::mat4 & translationMatrix
 ) {
 
 	shader.enable();
 	{
 		//-- Set ModelView matrix:
 		GLint location = shader.getUniformLocation("ModelView");
-		mat4 modelView = viewMatrix * node.trans;
+		mat4 modelView = viewMatrix * translationMatrix * root.trans * rotationMatrix * inverse(root.trans) * matrixStack;
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(modelView));
 		CHECK_GL_ERRORS;
+
+		location = shader.getUniformLocation("picking");
+		glUniform1i( location, do_picking );
 
 		//-- Set NormMatrix:
 		location = shader.getUniformLocation("NormalMatrix");
@@ -422,7 +445,15 @@ static void updateShaderUniforms(
 		//-- Set Material values:
 		location = shader.getUniformLocation("material.kd");
 		vec3 kd = node.material.kd;
-		glUniform3fv(location, 1, value_ptr(kd));
+		//cout<<"I am doing picking "<<do_picking<<endl;
+		if(do_picking) {
+			vec3 col = vec3((double)node.m_nodeId/(double)node.totalSceneNodes(),0.0,0.0);
+			glUniform3fv(location, 1, value_ptr(col));
+		} else {
+			glUniform3fv(location, 1, value_ptr(kd));
+		}
+
+
 		CHECK_GL_ERRORS;
 		location = shader.getUniformLocation("material.ks");
 		vec3 ks = node.material.ks;
@@ -443,16 +474,41 @@ static void updateShaderUniforms(
  */
 void A3::draw() {
 
-	glEnable( GL_DEPTH_TEST );
+	glEnable(GL_CULL_FACE);
+	if(cullFront && cullBack){
+		glCullFace(GL_FRONT_AND_BACK);
+	} else if (cullFront) {
+		glCullFace(GL_FRONT);
+	} else if (cullBack) {
+		glCullFace(GL_BACK);
+	} else {
+		glDisable(GL_CULL_FACE);
+	}
+
+
+	if(zBufferEnabled){
+		glEnable( GL_DEPTH_TEST );
+	}
 	renderSceneGraph(*m_rootNode);
 
 
-	glDisable( GL_DEPTH_TEST );
-	renderArcCircle();
+	if(zBufferEnabled){
+		glDisable( GL_DEPTH_TEST );
+	}
+
+
+
+
+	if( circleAppear ){
+		renderArcCircle();
+	}
+
+
+
 }
 
 //----------------------------------------------------------------------------------------
-void A3::renderSceneGraph(const SceneNode & root) {
+void A3::renderSceneGraph(SceneNode & root) {
 
 	// Bind the VAO once here, and reuse for all GeometryNode rendering below.
 	glBindVertexArray(m_vao_meshData);
@@ -491,26 +547,44 @@ void A3::renderSceneGraph(const SceneNode & root) {
 	*/
 
 	//pushMatrix();
-	multMatrix(m_view);
-	multMatrix(translationMatrix);
-	//cout<<"translupdateShaderUniformsationMatrix "<<translationMatrix<<endl;
-	traverseNode(root);
+	//multMatrix(m_view);
 
-	translationMatrix = mat4(1.0f);
+	//multMatrix(translationMatrix);
+	traverseNode(root,root);
+
+	//translationMatrix = mat4(1.0f);
+	//rotationMatrix = mat4(1.0f);
 	//popMatrix();
 
 	glBindVertexArray(0);
 	CHECK_GL_ERRORS;
 }
 
-void A3::traverseNode(const SceneNode &node) {
+void A3::traverseNode(SceneNode &node, SceneNode &root) {
+
 	pushMatrix();
 	multMatrix(node.trans);
-	for (const SceneNode * child : node.children) {
+
+	//node.set_parent_joint(node.m_nodeId);
+
+	for (SceneNode * child : node.children) {
+		if(node.m_nodeType == NodeType::GeometryNode) {
+			// parent is geometry; get parent's joint parent
+			child->set_parent_joint(node.parentJoint);
+			//cout<<node<<" "<<node.parentJoint<<endl;
+		} else if (node.m_nodeType == NodeType::JointNode) {
+			// parent is joint; set parent as joint parent
+			child->set_parent_joint(node.m_nodeId);
+
+		} else {
+			// parent is root node
+		}
 		if (child->m_nodeType == NodeType::GeometryNode){
 			const GeometryNode * geometryNode = static_cast<const GeometryNode *>(child);
-			updateShaderUniforms(m_shader, *geometryNode, matrixStack.top());
-
+			pushMatrix();
+			multMatrix(child->trans);
+			updateShaderUniforms(m_shader, *geometryNode, m_view, matrixStack.top(), root, rotationMatrix, translationMatrix);
+			popMatrix();
 
 			// Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
 			BatchInfo batchInfo = m_batchInfoMap[geometryNode->meshId];
@@ -521,7 +595,7 @@ void A3::traverseNode(const SceneNode &node) {
 			m_shader.disable();
 		}
 
-		traverseNode(*child);
+		traverseNode(*child,root);
 
 	}
 	popMatrix();
@@ -582,21 +656,25 @@ void A3::redoChange() {
 void A3::drawCircle() {
 	//TODO
 	cout<<"drawCircle"<<endl;
+	circleAppear = !circleAppear;
 }
 
 void A3::zBuffer() {
 	//TODO
 	cout<<"zBuffer"<<endl;
+	zBufferEnabled = !zBufferEnabled;
 }
 
 void A3::backCull() {
 	//TODO
 	cout<<"backCull"<<endl;
+	cullBack = !cullBack;
 }
 
 void A3::frontCull() {
 	//TODO
 	cout<<"frontCull"<<endl;
+	cullFront = !cullFront;
 }
 
 //----------------------------------------------------------------------------------------
@@ -658,7 +736,8 @@ bool A3::mouseMoveEvent (
 	double xDiff = xPos - previousMouseXPos;
 	double yDiff = yPos - previousMouseYPos;
 
-	cout<<"xDiff "<<xDiff<<" yDiff "<<yDiff<<endl;
+	//cout<<"xDiff "<<xDiff<<" yDiff "<<yDiff<<endl;
+	//cout<<"xPos "<<xPos<<" yPos "<<yPos<<endl;
 
 	if ( currentMode == 0 ) {
 		//Position/Orientation
@@ -671,6 +750,61 @@ bool A3::mouseMoveEvent (
 			eventHandled = true;
 		}
 		if( rightButtonPressed ){
+			// in / out
+			double radius = m_framebufferWidth < m_framebufferHeight ? m_framebufferWidth : m_framebufferHeight;
+			radius/= 4;
+			double x = xPos - m_framebufferWidth/2;
+			double y = yPos - m_framebufferHeight/2;
+			y*= -1.0f;
+			double z = sqrt(radius*radius - x*x - y*y);
+			vec3 V2 = vec3(x,y,z);
+			V2 /= sqrt(x*x+y*y+z*z);
+
+			double xp = previousMouseXPos - m_framebufferWidth/2;
+			double yp = previousMouseYPos - m_framebufferHeight/2;
+			yp*=-1.0f;
+			double zp = sqrt(radius*radius - xp*xp - yp*yp);
+			vec3 V1 = vec3(xp,yp,zp);
+			V1 /= sqrt(xp*xp+yp*yp+zp*zp);
+
+			vec3 N = cross(V1,V2);
+			float theta = acos(dot(V1,V2));
+
+
+
+			//cout<<"theta "<<theta<<endl;
+
+			double rsquared = x*x + y*y;
+			double rsquaredp = xp*xp + yp*yp;
+			bool in = false;
+			bool inp = false;
+			if( rsquared < radius*radius ){
+				in = true;
+			}
+			if( rsquaredp < radius*radius ){
+				inp = true;
+			}
+
+			if(inp && in) {
+				// in
+				rotationMatrix = rotate(rotationMatrix,theta,N);
+			} else if (!inp && !in){
+				y = yPos - m_framebufferHeight/2;
+				yp = previousMouseYPos - m_framebufferHeight/2;
+				zp = 0;
+				z = 0;
+
+				V1 = vec3(xp,yp,zp);
+				V2 = vec3(x,y,z);
+
+				// out
+				float theta =  acos(dot(V1,V2)/(length(V1)*length(V2)));
+				vec3 N = cross(V1,V2);
+
+				rotationMatrix = rotate(rotationMatrix,-theta,N);
+
+
+			}
 			eventHandled = true;
 		}
 	} else if ( currentMode == 1 ) {
@@ -686,7 +820,6 @@ bool A3::mouseMoveEvent (
 		}
 	}
 
-	cout<<"here"<<endl;
 	previousMouseXPos = xPos;
 	previousMouseYPos = yPos;
 
@@ -705,27 +838,112 @@ bool A3::mouseMoveEvent (
  	bool eventHandled(false);
 
  	if (actions == GLFW_PRESS) {
- 		if (!ImGui::IsMouseHoveringAnyWindow()) {
- 			if( button==GLFW_MOUSE_BUTTON_LEFT )
- 			{
- 				leftButtonPressed = true;
- 				eventHandled = true;
- 			}
- 			else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
- 			{
- 				centreButtonPressed = true;
- 				eventHandled = true;
- 			}
- 			else if( button==GLFW_MOUSE_BUTTON_RIGHT )
- 			{
- 				rightButtonPressed = true;
- 				eventHandled = true;
- 			}
- 		}
+		if ( currentMode == 0 ) {
+			if (!ImGui::IsMouseHoveringAnyWindow()) {
+	 			if( button==GLFW_MOUSE_BUTTON_LEFT )
+	 			{
+	 				leftButtonPressed = true;
+	 				eventHandled = true;
+	 			}
+	 			else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
+	 			{
+	 				centreButtonPressed = true;
+	 				eventHandled = true;
+	 			}
+	 			else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+	 			{
+	 				rightButtonPressed = true;
+	 				eventHandled = true;
+	 			}
+	 		}
+		} else if ( currentMode == 1 ) {
+			if (!ImGui::IsMouseHoveringAnyWindow()) {
+	 			if( button==GLFW_MOUSE_BUTTON_LEFT )
+	 			{
+	 				leftButtonPressed = true;
+					do_picking = true;
+
+					uploadCommonSceneUniforms();
+					glClearColor(1.0, 1.0, 1.0, 1.0 );
+					glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+					glClearColor(0.35, 0.35, 0.35, 1.0);
+
+					draw();
+
+					// I don't know if these are really necessary anymore.
+					// glFlush();
+					// glFinish();
+
+					CHECK_GL_ERRORS;
+
+					double xpos, ypos;
+					glfwGetCursorPos( m_window, &xpos, &ypos );
+
+					/*
+					uploadCommonSceneUniforms();
+					glClearColor(1.0, 1.0, 1.0, 1.0 );
+					glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+					glClearColor(0.35, 0.35, 0.35, 1.0);
+
+					draw();
+					*/
+
+					xpos *= double(m_framebufferWidth) / double(m_windowWidth);
+					// WTF, don't know why I have to measure y relative to the bottom of
+					// the window in this case.
+					ypos = m_windowHeight - ypos;
+					ypos *= double(m_framebufferHeight) / double(m_windowHeight);
+
+					GLubyte buffer[ 4 ] = { 0, 0, 0, 0 };
+					// A bit ugly -- don't want to swap the just-drawn false colours
+					// to the screen, so read from the back buffer.
+					glReadBuffer( GL_BACK );
+					// Actually read the pixel at the mouse location.
+					glReadPixels( int(xpos), int(ypos), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, buffer );
+
+					//unsigned int what = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
+
+					unsigned int which = buffer[0]*m_rootNode->totalSceneNodes()/256;
+
+					cout<<which<<endl;
+
+					do_picking = false;
+
+
+
+
+
+					//cout<<(double)buffer[0]<<endl;
+					//cout<<what<<endl;
+
+					// I don't know if these are really necessary anymore.
+					// glFlush();
+					// glFinish();
+
+					CHECK_GL_ERRORS;
+
+					//cout<<xpos<<" "<<ypos<<endl;
+
+
+	 				eventHandled = true;
+	 			}
+	 			else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
+	 			{
+	 				centreButtonPressed = true;
+	 				eventHandled = true;
+	 			}
+	 			else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+	 			{
+	 				rightButtonPressed = true;
+	 				eventHandled = true;
+	 			}
+	 		}
+		}
+
 
  	}
  	if (actions == GLFW_RELEASE) {
-		translationMatrix = mat4(1.0f);
+		//translationMatrix = mat4(1.0f);
  		if( button==GLFW_MOUSE_BUTTON_LEFT )
  		{
  			leftButtonPressed = false;

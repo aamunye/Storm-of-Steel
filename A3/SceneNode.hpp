@@ -21,17 +21,19 @@ public:
 	SceneNode(const SceneNode & other);
 
     virtual ~SceneNode();
-    
+
 	int totalSceneNodes() const;
-    
+
     const glm::mat4& get_transform() const;
     const glm::mat4& get_inverse() const;
-    
+
     void set_transform(const glm::mat4& m);
-    
+
     void add_child(SceneNode* child);
-    
+
     void remove_child(SceneNode* child);
+
+		void set_parent_joint(unsigned int parent);
 
 	//-- Transformations:
     void rotate(char axis, float angle);
@@ -42,12 +44,13 @@ public:
 	friend std::ostream & operator << (std::ostream & os, const SceneNode & node);
 
 	bool isSelected;
-    
+
     // Transformations
     glm::mat4 trans;
     glm::mat4 invtrans;
-    
+
     std::list<SceneNode*> children;
+		int parentJoint;
 
 	NodeType m_nodeType;
 	std::string m_name;
