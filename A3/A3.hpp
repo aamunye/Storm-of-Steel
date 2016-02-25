@@ -15,6 +15,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <stack>
+#include <vector>
 
 struct LightSource {
 	glm::vec3 position;
@@ -127,8 +128,37 @@ protected:
 			 const GeometryNode & node,
 			 const glm::mat4 & viewMatrix,
 			 const glm::mat4 & matrixStack,
-			 const SceneNode &root,
+			 const SceneNode & root,
 			 const glm::mat4 & rotationMatrix,
 			 const glm::mat4 & translationMatrix
 	);
+
+	std::vector<bool> connectedToJoint;
+
+	float hue;
+	bool hueForward;
+
+	std::vector<bool> selected;
+
+	std::vector<std::vector<glm::mat4>> rotationStack;
+	std::vector<int> rotationStackIndex;
+
+	std::vector<int> parentJoint;
+
+
+	double startMouseXPosM;
+	double startMouseYPosM;
+
+	double startMouseXPosR;
+	double startMouseYPosR;
+
+	int numOfNodes;
+
+	glm::mat4 jointRotationMatrix;
+
+	glm::mat4 headRotationMatrix;
+
+	int headId;
+	int jointHeadId;
+
 };

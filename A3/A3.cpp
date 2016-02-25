@@ -102,6 +102,8 @@ void A3::init()
 
 	translationMatrix = mat4(1.0f);
 	rotationMatrix = mat4(1.0f);
+	jointRotationMatrix = mat4(1.0f);
+	headRotationMatrix = mat4(1.0f);
 
 	circleAppear = true;
 	zBufferEnabled = true;
@@ -109,6 +111,22 @@ void A3::init()
 	cullFront = false;
 	cullBack = true;
 	do_picking = false;
+
+	hue = 0.0f;
+	hueForward = true;
+
+	//cout<<"Number is "<<m_rootNode->totalSceneNodes()<<endl;
+
+	selected = vector<bool>(m_rootNode->totalSceneNodes(),false);
+	connectedToJoint = vector<bool>(m_rootNode->totalSceneNodes(),false);
+
+	rotationStack = vector<vector<mat4>>(m_rootNode->totalSceneNodes(),vector<mat4>());
+	rotationStackIndex = vector<int>(m_rootNode->totalSceneNodes(),-1);
+
+	numOfNodes = m_rootNode->totalSceneNodes();
+
+	parentJoint = vector<int>(numOfNodes,-1);
+	//cout<<"size "<<rotationStack[0].size()<<endl;
 }
 
 //----------------------------------------------------------------------------------------
@@ -327,6 +345,7 @@ void A3::uploadCommonSceneUniforms() {
 void A3::appLogic()
 {
 	// Place per frame, application logic here ...
+	hue+=0.1f;
 
 	uploadCommonSceneUniforms();
 }
@@ -433,7 +452,7 @@ void A3::updateShaderUniforms(
 		CHECK_GL_ERRORS;
 
 		location = shader.getUniformLocation("picking");
-		glUniform1i( location, do_picking );
+		glUniform1i( location, do_picking || selected[node.m_nodeId] );
 
 		//-- Set NormMatrix:
 		location = shader.getUniformLocation("NormalMatrix");
@@ -447,9 +466,14 @@ void A3::updateShaderUniforms(
 		vec3 kd = node.material.kd;
 		//cout<<"I am doing picking "<<do_picking<<endl;
 		if(do_picking) {
+			//cout<<"bla "<<node<<endl;
 			vec3 col = vec3((double)node.m_nodeId/(double)node.totalSceneNodes(),0.0,0.0);
 			glUniform3fv(location, 1, value_ptr(col));
-		} else {
+		} else if (selected[node.m_nodeId]) {
+			vec3 col = vec3((double)node.m_nodeId/(double)node.totalSceneNodes(),(sin((hue+node.m_nodeId))+1.0f),(sin((hue+node.m_nodeId))+1.0f));
+			glUniform3fv(location, 1, value_ptr(col));
+		}
+		else {
 			glUniform3fv(location, 1, value_ptr(kd));
 		}
 
@@ -561,13 +585,51 @@ void A3::renderSceneGraph(SceneNode & root) {
 }
 
 void A3::traverseNode(SceneNode &node, SceneNode &root) {
-
 	pushMatrix();
+	mat4 m(1.0f);
+	if (node.m_nodeType == NodeType::JointNode) {
+		JointNode &jointNode = static_cast<JointNode&>(node);
+
+		//multMatrix()
+		vector<bool> selectedJoints = vector<bool>(numOfNodes, false);
+		for(int i = 0; i < numOfNodes; i++){
+			if(selected[i] && parentJoint[i]!=-1)selectedJoints[parentJoint[i]] = true;
+		}
+
+
+
+
+		//cout<<"m's length is "<<rotationStackIndex[jointNode.m_nodeId]<<endl;
+		for(int i=0;i<=rotationStackIndex[jointNode.m_nodeId];i++){
+			//vec2 xy = rotationStack[jointNode.m_nodeId][i];
+			//m = glm::rotate(m, xy[0]/m_windowWidth, vec3(1.0f,0.0f,0.0f));
+			//m = glm::rotate(m, xy[1]/m_windowHeight, vec3(0.0f,1.0f,0.0f));
+			m*=rotationStack[jointNode.m_nodeId][i];
+		}
+
+
+
+
+		multMatrix(m);
+		if(selectedJoints[jointNode.m_nodeId]){
+			if( jointNode.m_nodeId == jointHeadId ) {
+				multMatrix(headRotationMatrix);
+			} else {
+				multMatrix(jointRotationMatrix);
+			}
+
+		}
+
+		//cout<<jointNode.m_joint_x.min<<" "<<jointNode.m_joint_x.init<<" "<<jointNode.m_joint_x.max<<endl;
+	}
+
+
 	multMatrix(node.trans);
 
 	//node.set_parent_joint(node.m_nodeId);
 
 	for (SceneNode * child : node.children) {
+		/*
 		if(node.m_nodeType == NodeType::GeometryNode) {
 			// parent is geometry; get parent's joint parent
 			child->set_parent_joint(node.parentJoint);
@@ -579,6 +641,31 @@ void A3::traverseNode(SceneNode &node, SceneNode &root) {
 		} else {
 			// parent is root node
 		}
+		*/
+		if(child->m_name=="head"){
+			headId = child->m_nodeId;
+			jointHeadId = parentJoint[headId];
+			//cout<<headId<<" "<<jointHeadId<<endl;
+			//multMatrix(inverse(m));
+			//popMatrix();
+			//pushMatrix();
+			//multMatrix(headRotationMatrix);
+			//multMatrix(node.trans);
+		}
+
+
+		if (node.m_nodeType == NodeType::JointNode) {
+			// parent is joint; set parent as joint parent
+			child->set_parent_joint(node.m_nodeId);
+			parentJoint[child->m_nodeId] = node.m_nodeId;
+			connectedToJoint[child->m_nodeId] = true;
+			//cout<<child->m_nodeId<<endl;
+			//cout<<"length"<<connectedToJoint.size()<<endl;
+			//cout<<"setting "<<*child<<" as connected"<<endl;
+		} else {
+			// parent is root node
+		}
+
 		if (child->m_nodeType == NodeType::GeometryNode){
 			const GeometryNode * geometryNode = static_cast<const GeometryNode *>(child);
 			pushMatrix();
@@ -646,11 +733,28 @@ void A3::resetAll() {
 void A3::undoChange() {
 	//TODO
 	cout<<"undoChange"<<endl;
+	for(int i=0;i<rotationStack.size();i++){
+		if(rotationStackIndex[i] > -1) {
+			rotationStackIndex[i] -= 1;
+		}
+	}
 }
 
 void A3::redoChange() {
 	//TODO
-	cout<<"redoChange"<<endl;
+	cout<<"starting redo"<<endl;
+	for(int i=0;i<rotationStack.size();i++){
+		cout<<"rotationStackIndex[i] "<<rotationStackIndex[i]<<" rotationStack[i].size()-1 "<<rotationStack[i].size()-1<<endl;
+		int a = rotationStackIndex[i];
+		int b = (rotationStack[i].size()-1);
+		cout<<"a is "<<a<<" and b is "<<b<<" a<b is "<<(a<b)<<endl;
+		if(a<b){
+		//if(rotationStackIndex[i] < (rotationStack[i].size()-1)) {
+			rotationStackIndex[i] += 1;
+			cout<<"added 1"<<endl;
+		}
+	}
+
 }
 
 void A3::drawCircle() {
@@ -813,9 +917,16 @@ bool A3::mouseMoveEvent (
 			eventHandled = true;
 		}
 		if( centreButtonPressed ){
+			float dX = xPos-previousMouseXPos;
+			float dY = previousMouseYPos-yPos;
+			//cout<<"dX is "<<dX<<" dY is "<<dY<<endl;
+			jointRotationMatrix = glm::rotate(jointRotationMatrix, (float)dX/m_windowWidth, vec3(0.0f,1.0f,0.0f));
+			jointRotationMatrix = glm::rotate(jointRotationMatrix, (float)-dY/m_windowHeight, vec3(1.0f,0.0f,0.0f));
 			eventHandled = true;
 		}
 		if( rightButtonPressed ){
+			float dX = xPos-previousMouseXPos;
+			headRotationMatrix = glm::rotate(headRotationMatrix, (float)dX/m_windowHeight, vec3(0.0f,1.0f,0.0f));
 			eventHandled = true;
 		}
 	}
@@ -904,8 +1015,20 @@ bool A3::mouseMoveEvent (
 					//unsigned int what = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
 
 					unsigned int which = buffer[0]*m_rootNode->totalSceneNodes()/256;
+					//cout<<which<<endl;
+					for(int i=0;i<numOfNodes;i++){
+						//cout<<"i "<<i<<" "<<connectedToJoint[i]<<endl;
+					}
 
-					cout<<which<<endl;
+					//cout<<which<<connectedToJoint[which+1]<<endl;
+					//cout<<which
+					which = nearbyint((float)buffer[0]*(float)m_rootNode->totalSceneNodes()/256.0f);
+
+
+					if(connectedToJoint[which]) {
+						selected[which] = !selected[which];
+					}
+
 
 					do_picking = false;
 
@@ -930,11 +1053,14 @@ bool A3::mouseMoveEvent (
 	 			else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
 	 			{
 	 				centreButtonPressed = true;
+					glfwGetCursorPos( m_window, &startMouseXPosM, &startMouseYPosM );
 	 				eventHandled = true;
 	 			}
 	 			else if( button==GLFW_MOUSE_BUTTON_RIGHT )
 	 			{
 	 				rightButtonPressed = true;
+					glfwGetCursorPos( m_window, &startMouseXPosR, &startMouseYPosR );
+
 	 				eventHandled = true;
 	 			}
 	 		}
@@ -944,21 +1070,102 @@ bool A3::mouseMoveEvent (
  	}
  	if (actions == GLFW_RELEASE) {
 		//translationMatrix = mat4(1.0f);
- 		if( button==GLFW_MOUSE_BUTTON_LEFT )
- 		{
- 			leftButtonPressed = false;
- 			eventHandled = true;
- 		}
- 		else if( button==GLFW_MOUSE_BUTTON_MIDDLE )
- 		{
- 			centreButtonPressed = false;
- 			eventHandled = true;
- 		}
- 		else if( button==GLFW_MOUSE_BUTTON_RIGHT )
- 		{
- 			rightButtonPressed = false;
- 			eventHandled = true;
- 		}
+		double currXPos, currYPos;
+		glfwGetCursorPos( m_window, &currXPos, &currYPos );
+		if( button==GLFW_MOUSE_BUTTON_LEFT )
+		{
+			leftButtonPressed = false;
+			eventHandled = true;
+		}
+		if( currentMode == 0 ) {
+
+			if( button==GLFW_MOUSE_BUTTON_MIDDLE )
+	 		{
+	 			centreButtonPressed = false;
+	 			eventHandled = true;
+	 		}
+	 		else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+	 		{
+	 			rightButtonPressed = false;
+	 			eventHandled = true;
+	 		}
+		} else {
+			if( button==GLFW_MOUSE_BUTTON_MIDDLE )
+	 		{
+	 			centreButtonPressed = false;
+
+				//cout<<"M X:"<<currXPos-startMouseXPosM<<" Y:"<<startMouseYPosM-currYPos<<endl;
+				double dX = currXPos-startMouseXPosM;
+				double dY = startMouseYPosM-currYPos;
+
+				vector<bool> selectedJoints = vector<bool>(numOfNodes, false);
+				for(int i = 0; i < numOfNodes; i++){
+					if(selected[i] && parentJoint[i]!=-1)selectedJoints[parentJoint[i]] = true;
+				}
+
+				for(int i=0;i<numOfNodes;i++) {
+					if(rotationStackIndex[i]+1 < rotationStack[i].size()) {
+						//cout<<"In here for "<<i<<endl;
+						rotationStack[i].erase(rotationStack[i].begin()+rotationStackIndex[i]+1, rotationStack[i].end());
+						//cout<<"new size "<<rotationStack[i].size()<<endl;
+					}
+					if(selectedJoints[i]){
+						//cout<<i<<" selected"<<endl;
+
+						//rotationStack[i].push_back(vec2(dX,dY));
+						if(i!=jointHeadId) {
+							rotationStack[i].push_back(jointRotationMatrix);
+							rotationStackIndex[i]+=1;
+						}
+						else {
+							rotationStack[i].push_back(mat4(1.0f));
+							rotationStackIndex[i]+=1;
+						}
+
+
+					} else {
+						if(i!=jointHeadId) {
+							rotationStack[i].push_back(mat4(1.0f));
+							rotationStackIndex[i]+=1;
+						}
+						else {
+							rotationStack[i].push_back(mat4(1.0f));
+							rotationStackIndex[i]+=1;
+						}
+					}
+				}
+				//cout<<endl;
+
+				jointRotationMatrix = mat4(1.0f);
+
+	 			eventHandled = true;
+	 		}
+	 		else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+	 		{
+	 			rightButtonPressed = false;
+
+				vector<bool> selectedJoints = vector<bool>(numOfNodes, false);
+				for(int i = 0; i < numOfNodes; i++){
+					if(selected[i] && parentJoint[i]!=-1)selectedJoints[parentJoint[i]] = true;
+				}
+
+				//cout<<"R X:"<<currXPos-startMouseXPosR<<" Y:"<<startMouseYPosR-currYPos<<endl;
+				//cout<<"selected[jointHeadId]"<<selected[jointHeadId]<<endl;
+				if( selectedJoints[jointHeadId] ){
+					rotationStack[jointHeadId].push_back(headRotationMatrix);
+					rotationStackIndex[jointHeadId]+=1;
+				}
+
+
+				headRotationMatrix = mat4(1.0f);
+
+	 			eventHandled = true;
+	 		}
+		}
+
+
+
+
  	}
 
  	return eventHandled;
