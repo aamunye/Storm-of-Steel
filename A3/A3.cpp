@@ -711,28 +711,26 @@ void A3::resetMatrix() {
 }
 
 void A3::resetPosition() {
-	//TODO
-	cout<<"resetPosition"<<endl;
+	translationMatrix=mat4(1.0f);
 }
 
 void A3::resetOrientation() {
-	//TODO
-	cout<<"resetOrientation"<<endl;
+	rotationMatrix = mat4(1.0f);
 }
 
 void A3::resetJoints() {
-	//TODO
-	cout<<"resetJoints"<<endl;
+	rotationStack = vector<vector<mat4>>(m_rootNode->totalSceneNodes(),vector<mat4>());
+	rotationStackIndex = vector<int>(m_rootNode->totalSceneNodes(),-1);
 }
 
 void A3::resetAll() {
-	//TODO
-	cout<<"resetAll"<<endl;
+	translationMatrix=mat4(1.0f);
+	rotationMatrix = mat4(1.0f);
+	rotationStack = vector<vector<mat4>>(m_rootNode->totalSceneNodes(),vector<mat4>());
+	rotationStackIndex = vector<int>(m_rootNode->totalSceneNodes(),-1);
 }
 
 void A3::undoChange() {
-	//TODO
-	cout<<"undoChange"<<endl;
 	for(int i=0;i<rotationStack.size();i++){
 		if(rotationStackIndex[i] > -1) {
 			rotationStackIndex[i] -= 1;
@@ -741,43 +739,33 @@ void A3::undoChange() {
 }
 
 void A3::redoChange() {
-	//TODO
-	cout<<"starting redo"<<endl;
 	for(int i=0;i<rotationStack.size();i++){
-		cout<<"rotationStackIndex[i] "<<rotationStackIndex[i]<<" rotationStack[i].size()-1 "<<rotationStack[i].size()-1<<endl;
+		//cout<<"rotationStackIndex[i] "<<rotationStackIndex[i]<<" rotationStack[i].size()-1 "<<rotationStack[i].size()-1<<endl;
 		int a = rotationStackIndex[i];
 		int b = (rotationStack[i].size()-1);
-		cout<<"a is "<<a<<" and b is "<<b<<" a<b is "<<(a<b)<<endl;
+		//cout<<"a is "<<a<<" and b is "<<b<<" a<b is "<<(a<b)<<endl;
 		if(a<b){
 		//if(rotationStackIndex[i] < (rotationStack[i].size()-1)) {
 			rotationStackIndex[i] += 1;
-			cout<<"added 1"<<endl;
+			//cout<<"added 1"<<endl;
 		}
 	}
 
 }
 
 void A3::drawCircle() {
-	//TODO
-	cout<<"drawCircle"<<endl;
 	circleAppear = !circleAppear;
 }
 
 void A3::zBuffer() {
-	//TODO
-	cout<<"zBuffer"<<endl;
 	zBufferEnabled = !zBufferEnabled;
 }
 
 void A3::backCull() {
-	//TODO
-	cout<<"backCull"<<endl;
 	cullBack = !cullBack;
 }
 
 void A3::frontCull() {
-	//TODO
-	cout<<"frontCull"<<endl;
 	cullFront = !cullFront;
 }
 
@@ -1151,8 +1139,24 @@ bool A3::mouseMoveEvent (
 
 				//cout<<"R X:"<<currXPos-startMouseXPosR<<" Y:"<<startMouseYPosR-currYPos<<endl;
 				//cout<<"selected[jointHeadId]"<<selected[jointHeadId]<<endl;
+				for(int i=0;i<numOfNodes; i++) {
+
+					if(rotationStackIndex[i]+1 < rotationStack[i].size()) {
+						//cout<<"In here for "<<i<<endl;
+						rotationStack[i].erase(rotationStack[i].begin()+rotationStackIndex[i]+1, rotationStack[i].end());
+						//cout<<"new size "<<rotationStack[i].size()<<endl;
+					}
+
+					if(i!=jointHeadId) {
+						rotationStack[i].push_back(mat4(1.0f));
+						rotationStackIndex[i]+=1;
+					}
+				}
 				if( selectedJoints[jointHeadId] ){
 					rotationStack[jointHeadId].push_back(headRotationMatrix);
+					rotationStackIndex[jointHeadId]+=1;
+				} else {
+					rotationStack[jointHeadId].push_back(mat4(1.0f));
 					rotationStackIndex[jointHeadId]+=1;
 				}
 
