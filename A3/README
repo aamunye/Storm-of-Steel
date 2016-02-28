@@ -11,7 +11,8 @@ directory, enter:
 As for this program, it was written and tested on the gl32.student.cs machine.
 
 Manual:
-Note: One thing I didn't complete during this assignment was joint constraints
+Note: One thing I didn't complete during this assignment was joint constraints.
+So I do have 15 DOF's but it wasn't constrained.
 
 I didn't have the time to write out the entire hierarchy, but note that I used
-dummy nodes to undo scaling.
+dummy nodes to undo scaling to get around the scaling problem.

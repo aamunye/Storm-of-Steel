@@ -4,7 +4,7 @@
 
 #include <sstream>
 #include <iostream>
-#include <cstdio>
+#include <thread>
 
 #include <imgui/imgui.h>
 #include <imgui_impl_glfw_gl3.h>
@@ -59,7 +59,7 @@ void CS488Window::errorCallback(
 	stringstream msg;
 	msg << "GLFW Error Code: " << error << "\n" <<
 			"GLFW Error Description: " << description << "\n";
-    cout << msg.str();
+	throw Exception(msg.str());
 }
 
 //----------------------------------------------------------------------------------------
@@ -331,8 +331,7 @@ void CS488Window::run (
 	glfwSetErrorCallback(errorCallback);
 
     if (glfwInit() == GL_FALSE) {
-        fprintf(stderr, "Call to glfwInit() failed.\n");
-        std::abort();
+	    throw Exception("Call to glfwInit() failed.");
     }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
@@ -350,15 +349,13 @@ void CS488Window::run (
     m_monitor = glfwGetPrimaryMonitor();
     if (m_monitor == NULL) {
         glfwTerminate();
-        fprintf(stderr, "Error retrieving primary monitor.\n");
-        std::abort();
+        throw Exception("Error retrieving primary m_monitor.");
     }
 
     m_window = glfwCreateWindow(width, height, windowTitle.c_str(), NULL, NULL);
     if (m_window == NULL) {
         glfwTerminate();
-        fprintf(stderr, "Call to glfwCreateWindow failed.\n");
-        std::abort();
+        throw Exception("Call to glfwCreateWindow failed.");
     }
 
     // Get default framebuffer dimensions in order to support high-definition

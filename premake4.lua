@@ -25,7 +25,7 @@ if not os.isfile("lib/libglfw3.a") then
     os.execute("cp shared/glfw-3.1.1/build/src/libglfw3.a lib/")
 end
 
--- Build lua-5.3.1 library and copy it into <cs488_root>/lib if it is not
+-- Build lua-5.3.1 library and copyt it into <cs488_root>/lib if it is not
 -- already present.
 if not os.isfile("lib/liblua.a") then
     os.chdir("shared/lua-5.3.1")
@@ -80,4 +80,19 @@ solution "BuildStaticLibs"
         files { 
             "shared/imgui/*.cpp",
             "shared/gl3w/GL/gl3w.c"
+        }
+
+    -- Build lodepng static library
+    project "lodepng"
+        kind "StaticLib"
+        language "C++"
+        location "build"
+        objdir "build"
+        targetdir "lib"
+        includedirs (includeDirList)
+        includedirs {
+            "shared/lodepng"
+        }
+        files { 
+            "shared/lodepng/lodepng.cpp"
         }
