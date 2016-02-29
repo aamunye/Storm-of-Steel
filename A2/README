@@ -6,7 +6,7 @@ directory, enter:
   premake4 clean
   premake4 gmake
   make
-  ./A2
+  ./A3 [puppetFileName]
 
 As for this program, it was written and tested on the gl32.student.cs machine.
 
