@@ -3,8 +3,12 @@
 #include <glm/glm.hpp>
 
 #include "SceneNode.hpp"
+#include "GeometryNode.hpp"
+#include "Primitive.hpp"
 #include "Light.hpp"
 #include "Image.hpp"
+
+#include <cmath>
 
 void A4_Render(
 		// What to render

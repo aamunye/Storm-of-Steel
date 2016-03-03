@@ -1,10 +1,19 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
+
+#include "polyroots.hpp"
+
+#include <iostream>
+
+using namespace std;
+using namespace glm;
 
 class Primitive {
 public:
   virtual ~Primitive();
+  virtual bool hit(glm::vec3 origin, glm::vec3 direction, float& shortestT);
 };
 
 class Sphere : public Primitive {
@@ -25,6 +34,8 @@ public:
   }
   virtual ~NonhierSphere();
 
+  bool hit(glm::vec3 origin, glm::vec3 pworld, float& shortestT);
+
 private:
   glm::vec3 m_pos;
   double m_radius;
@@ -36,7 +47,7 @@ public:
     : m_pos(pos), m_size(size)
   {
   }
-  
+
   virtual ~NonhierBox();
 
 private:
