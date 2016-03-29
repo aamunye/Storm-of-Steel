@@ -22,14 +22,14 @@ endif
 ifeq ($(config),debug)
   OBJDIR     = Debug
   TARGETDIR  = ..
-  TARGET     = $(TARGETDIR)/A0
+  TARGET     = $(TARGETDIR)/A5
   DEFINES   += -DDEBUG
   INCLUDES  += -I../../shared -I../../shared/include -I../../shared/gl3w -I../../shared/imgui
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -std=c++11
   CXXFLAGS  += $(CFLAGS) 
   LDFLAGS   += -L../../lib
-  LIBS      += -lcs488-framework -limgui -lglfw3 -lGL -lXinerama -lXcursor -lXxf86vm -lXi -lXrandr -lX11 -lstdc++ -ldl -lpthread
+  LIBS      += -lcs488-framework -limgui -lglfw3 -llua -lGL -lXinerama -lXcursor -lXxf86vm -lXi -lXrandr -lX11 -lstdc++ -ldl -lpthread
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += 
   LINKCMD    = $(CXX) -o $(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES) $(ARCH) $(LIBS)
@@ -44,14 +44,14 @@ endif
 ifeq ($(config),release)
   OBJDIR     = Release
   TARGETDIR  = ..
-  TARGET     = $(TARGETDIR)/A0
+  TARGET     = $(TARGETDIR)/A5
   DEFINES   += -DNDEBUG
   INCLUDES  += -I../../shared -I../../shared/include -I../../shared/gl3w -I../../shared/imgui
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -std=c++11
   CXXFLAGS  += $(CFLAGS) 
   LDFLAGS   += -s -L../../lib
-  LIBS      += -lcs488-framework -limgui -lglfw3 -lGL -lXinerama -lXcursor -lXxf86vm -lXi -lXrandr -lX11 -lstdc++ -ldl -lpthread
+  LIBS      += -lcs488-framework -limgui -lglfw3 -llua -lGL -lXinerama -lXcursor -lXxf86vm -lXi -lXrandr -lX11 -lstdc++ -ldl -lpthread
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += 
   LINKCMD    = $(CXX) -o $(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES) $(ARCH) $(LIBS)
@@ -64,8 +64,12 @@ ifeq ($(config),release)
 endif
 
 OBJECTS := \
-	$(OBJDIR)/A0.o \
+	$(OBJDIR)/GeometryNode.o \
+	$(OBJDIR)/JointNode.o \
 	$(OBJDIR)/Main.o \
+	$(OBJDIR)/scene_lua.o \
+	$(OBJDIR)/SceneNode.o \
+	$(OBJDIR)/A5.o \
 
 RESOURCES := \
 
@@ -83,7 +87,7 @@ all: $(TARGETDIR) $(OBJDIR) prebuild prelink $(TARGET)
 	@:
 
 $(TARGET): $(GCH) $(OBJECTS) $(LDDEPS) $(RESOURCES)
-	@echo Linking A0
+	@echo Linking A5
 	$(SILENT) $(LINKCMD)
 	$(POSTBUILDCMDS)
 
@@ -104,7 +108,7 @@ else
 endif
 
 clean:
-	@echo Cleaning A0
+	@echo Cleaning A5
 ifeq (posix,$(SHELLTYPE))
 	$(SILENT) rm -f  $(TARGET)
 	$(SILENT) rm -rf $(OBJDIR)
@@ -126,10 +130,22 @@ $(GCH): $(PCH)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 endif
 
-$(OBJDIR)/A0.o: ../A0.cpp
+$(OBJDIR)/GeometryNode.o: ../GeometryNode.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/JointNode.o: ../JointNode.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/Main.o: ../Main.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/scene_lua.o: ../scene_lua.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/SceneNode.o: ../SceneNode.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/A5.o: ../A5.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 

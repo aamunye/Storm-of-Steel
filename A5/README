@@ -1,20 +1,18 @@
 Compiling:
 The compiling process has not been modified.
 To compile and run the program, make sure that the objects in the cs489-a0a1
-folder have been built first, then run the following commands from the A0
+folder have been built first, then run the following commands from the A1
 directory, enter:
   premake4 clean
   premake4 gmake
   make
-  ./A0
+  ./A5 [puppet Location]
 
-As for this program, it was written on a MacBook Air laptop and tested on the
-gl11.student.cs machine.
+As for this program, it was written and tested on the gl32.student.cs machine.
 
 Manual:
-One thing to note here is that with respect to the instructions regarding the
-scaling of the triangle using the '+' and '-' keys, I was not sure if we were
-required to increase/decrease by a certain percentage, or if every increase
-should be a multiple of the original size.  My code responds to the '+' key by
-multiplying the current size by 1.33 and the '-' reverses this by dividing the
-current size by 1.33.
+Note: One thing I didn't complete during this assignment was joint constraints.
+So I do have 15 DOF's but it wasn't constrained.
+
+I didn't have the time to write out the entire hierarchy, but note that I used
+dummy nodes to undo scaling to get around the scaling problem.

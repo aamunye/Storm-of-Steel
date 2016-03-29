@@ -12,7 +12,7 @@ PROJECTS := A2
 
 all: $(PROJECTS)
 
-A2:
+A2: 
 	@echo "==== Building A2 ($(config)) ===="
 	@${MAKE} --no-print-directory -C build -f Makefile
 
