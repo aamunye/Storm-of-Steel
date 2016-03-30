@@ -3,7 +3,7 @@ rootnode:rotate('y', 90.0)
 --rootnode:rotate('x', 40.0)
 --rootnode:rotate('z', 90.0)
 rootnode:scale( 0.25, 0.25, 0.25 )
-rootnode:translate(0.25, 0.0, 2.5)
+--rootnode:translate(0.25, 0.0, 2.5)
 
 red = gr.material({1.0, 0.0, 0.0}, {0.1, 0.1, 0.1}, 10)
 blue = gr.material({0.0, 0.0, 1.0}, {0.1, 0.1, 0.1}, 10)
@@ -362,14 +362,18 @@ leftToes:translate(0.0,2.0,2.0)
 
 --Shell
 
+undorootnode = gr.node('undorootnode')
+undorootnode:scale(1/0.25,1/0.25,1/0.25)
+rootnode:add_child(undorootnode)
+
 shellRoot = gr.node('shellRoot')
-shellRoot:scale(1/0.25,1/0.25,1/0.25)
-rootnode:add_child(shellRoot)
+undorootnode:add_child(shellRoot)
+--shellRoot:rotate('y',180.0)
 
 shellTorso = gr.mesh('cube', 'shellTorso')
 shellRoot:add_child(shellTorso)
 shellTorso:set_material(purple)
-shellTorso:translate(0.0,0.0,5.0)
+--shellTorso:translate(0.0,0.0,5.0)
 shellTorso:scale(0.25,0.25,0.25)
 shellTorso:scale(1.0,1.0,4.0)
 
@@ -380,7 +384,7 @@ shellTorso:add_child(undoshellTorso)
 
 shellHead = gr.mesh('suzanne', 'shellHead')
 undoshellTorso:add_child(shellHead)
-shellHead:set_material(red)
+shellHead:set_material(green)
 shellHead:scale(0.25,0.25,0.25)
 shellHead:translate(0.0,0.0,0.5)
 
@@ -419,7 +423,7 @@ shellBackJoint3:rotate('x',30)
 
 shellBack3 = gr.mesh('sphere', 'shellBack3')
 shellBackJoint3:add_child(shellBack3)
-shellBack3:set_material(green)
+shellBack3:set_material(red)
 shellBack3:scale(0.15,0.15,0.5)
 
 
@@ -432,7 +436,7 @@ shellBackJoint4:rotate('x',-30)
 
 shellBack4 = gr.mesh('sphere', 'shellBack4')
 shellBackJoint4:add_child(shellBack4)
-shellBack4:set_material(blue)
+shellBack4:set_material(black)
 shellBack4:scale(0.15,0.15,0.5)
 
 

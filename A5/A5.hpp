@@ -107,6 +107,7 @@ protected:
 	glm::vec3 fieldTriangesArray[FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2*3];
 
 	int a=0;
+	int shellTimeInterval=0;
 	glm::vec4 rightFoot = glm::vec4(0.0f,0.0f,0.0f,1.0f);
 
 
@@ -170,6 +171,15 @@ protected:
 			 const glm::mat4 & translationMatrix
 	);
 	void updateShaderUniforms2(
+			 const ShaderProgram & shader,
+			 const GeometryNode & node,
+			 const glm::mat4 & viewMatrix,
+			 const glm::mat4 & matrixStack,
+			 const SceneNode & root,
+			 const glm::mat4 & rotationMatrix,
+			 const glm::mat4 & translationMatrix
+	);
+	void updateShaderUniformsShell(
 			 const ShaderProgram & shader,
 			 const GeometryNode & node,
 			 const glm::mat4 & viewMatrix,

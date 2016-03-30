@@ -13,6 +13,9 @@ using namespace std;
 #include <glm/gtx/io.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include <cmath>
 
 using namespace glm;
@@ -637,6 +640,8 @@ void A5::updateShaderUniforms(
 		float xSegLength = (float)FIELD_LENGTH_X/(float)(FIELD_SEGMENTS_X - 1);
 		float zSegLength = (float)FIELD_LENGTH_Z/(float)(FIELD_SEGMENTS_Z - 1);
 		W = glm::translate( W, vec3(0.0f, fieldArray[(int)(rightFoot.x/xSegLength)][(int)(rightFoot.z/zSegLength)].y+1.0f, 0.0f));
+
+
 		//cout<<fieldArray[(int)(rightFoot.x/xSegLength)][(int)(rightFoot.z/zSegLength)].y<<endl;
 
 
@@ -703,7 +708,8 @@ void A5::updateShaderUniforms2(
 	shader.enable();
 	{
 		mat4 W;
-		W = glm::translate( W, vec3( -float(FIELD_LENGTH_X)/2.0f, 0, -float(FIELD_LENGTH_Z)/2.0f - 1.0f ) );
+		//W = glm::translate( W, vec3( -float(FIELD_LENGTH_X)/2.0f, 0, -float(FIELD_LENGTH_Z)/2.0f - 1.0f ) );
+		W = glm::translate( W, vec3( -float(FIELD_LENGTH_X)/2.0f, 0, -float(FIELD_LENGTH_Z)/2.0f ) );
 
 		//-- Set ModelView matrix:
 		GLint location = shader.getUniformLocation("ModelView");
@@ -730,6 +736,71 @@ void A5::updateShaderUniforms2(
 			glUniform3fv(location, 1, value_ptr(col));
 		} else if (selected[node.m_nodeId]) {
 			vec3 col = vec3((double)node.m_nodeId/(double)node.totalSceneNodes(),(sin((hue+node.m_nodeId))+1.0f),(sin((hue+node.m_nodeId))+1.0f));
+			glUniform3fv(location, 1, value_ptr(col));
+		}
+		else {
+			glUniform3fv(location, 1, value_ptr(kd));
+		}
+
+
+		CHECK_GL_ERRORS;
+		location = shader.getUniformLocation("material.ks");
+		vec3 ks = node.material.ks;
+		glUniform3fv(location, 1, value_ptr(ks));
+		CHECK_GL_ERRORS;
+		location = shader.getUniformLocation("material.shininess");
+		glUniform1f(location, node.material.shininess);
+		CHECK_GL_ERRORS;
+
+	}
+	shader.disable();
+
+}
+
+// Update mesh specific shader uniforms:
+void A5::updateShaderUniformsShell(
+		const  ShaderProgram & shader,
+		const  GeometryNode & node,
+		const  glm::mat4 & viewMatrix,
+		const  glm::mat4 & matrixStack,
+		const  SceneNode &root,
+		const  glm::mat4 & rotationMatrix,
+		const glm::mat4 & translationMatrix
+) {
+
+	shader.enable();
+	{
+		mat4 W;
+		W = mat4(1.0f);
+		W = glm::translate( W, vec3( -float(FIELD_LENGTH_X)/2.0f + FIELD_LENGTH_X , 0, -float(FIELD_LENGTH_Z)/2.0f + float(FIELD_LENGTH_Z)/2.0f ) );
+
+
+		//-- Set ModelView matrix:
+		GLint location = shader.getUniformLocation("ModelView");
+		//mat4 modelView = viewMatrix * translationMatrix * root.trans * rotationMatrix * inverse(root.trans) * matrixStack;
+		mat4 modelView = m_view * m_flyover * m_zoom * W * root.trans * inverse(root.trans) * matrixStack;
+		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(modelView));
+		CHECK_GL_ERRORS;
+
+		location = shader.getUniformLocation("picking");
+		glUniform1i( location, do_picking || selected[node.m_nodeId] );
+
+		//-- Set NormMatrix:
+		location = shader.getUniformLocation("NormalMatrix");
+		mat3 normalMatrix = glm::transpose(glm::inverse(mat3(modelView)));
+		glUniformMatrix3fv(location, 1, GL_FALSE, value_ptr(normalMatrix));
+		CHECK_GL_ERRORS;
+
+
+		//-- Set Material values:
+		location = shader.getUniformLocation("material.kd");
+		vec3 kd = node.material.kd;
+		if(do_picking) {
+			vec3 col = vec3((double)node.m_nodeId/(double)node.totalSceneNodes(),0.0,0.0);
+			glUniform3fv(location, 1, value_ptr(col));
+		} else if (selected[node.m_nodeId]) {
+			//vec3 col = vec3((double)node.m_nodeId/(double)node.totalSceneNodes(),(sin((hue+node.m_nodeId))+1.0f),(sin((hue+node.m_nodeId))+1.0f));
+			vec3 col = vec3(0.0f,(sin((hue+node.m_nodeId))+1.0f),0.0f);
 			glUniform3fv(location, 1, value_ptr(col));
 		}
 		else {
@@ -841,10 +912,55 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 	mat4 m(1.0f);
 
 	if(node.m_name=="shellRoot") {
-		cout<<"got here "<<a<<endl;
+		shellTimeInterval++;
+
 		mat4 mm;
-		mm = rotate(mm,a*0.003f, vec3(0.0f,0.0f,1.0f));
+		float xDistance = FIELD_LENGTH_X/2.0f;
+		float speed = 0.03f;
+		float x = -shellTimeInterval*speed;
+
+		if(-x>=xDistance){
+			shellTimeInterval = 0;
+			x = -shellTimeInterval*speed;
+		}
+		//float y = -2.0f*((-x/2.0f-5.0f))*((-x/2.0f-5.0f))+50.0f;
+		float g = -2.8f;
+		float b = (xDistance/4.0f)*(xDistance/4.0f)*g;
+		float y = g*((-x/2.0f-xDistance/4.0f))*((-x/2.0f-xDistance/4.0f))-b;
+
+		float zDistance = -FIELD_LENGTH_Z/2.0f;
+		float z = zDistance/xDistance*x;
+		//y=0.0f;
+
+
+		//cout<<y<<endl;
+
+		//mm = glm::translate( mm, vec3( -float(FIELD_LENGTH_X)/2.0f , 0, -float(FIELD_LENGTH_Z)/2.0f ) );
+		//mm = glm::translate( mm, vec3( 20.0f,0.0f,0.0f) );
+		mm = translate(mm, vec3(z,y,x));
+
+		//mm = glm::translate( mm, vec3( 0.0f,0.0f,-80.0f) );
+		//mm = translate(mm, vec3(0.0f,y,x));
+
+		float spinSpeed = 0.2f;
+
+
+		mm = rotate(mm, (float)M_PI, vec3(0.0f,1.0f,0.0f));
+		mm = rotate(mm, -atan(2.0f*g*(-x/2.0f-xDistance/4.0f)), vec3(1.0f,0.0f,0.0f));
+		mm = rotate(mm,shellTimeInterval*spinSpeed, vec3(0.0f,0.0f,1.0f));
+
+		//cout<<atan(4.0f*x/2.0f)<<endl;
+		//cout<<2.0f*g*(-x/2.0f-xDistance/4.0f)<<endl;
+
+
+
+
+
 		multMatrix(mm);
+	}
+
+	if(node.m_name=="shellHead"){
+		selected[node.m_nodeId] = true;
 	}
 
 
@@ -859,7 +975,6 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 
 
 
-		//cout<<"m's length is "<<rotationStackIndex[jointNode.m_nodeId]<<endl;
 		for(int i=0;i<=rotationStackIndex[jointNode.m_nodeId];i++){
 			//vec2 xy = rotationStack[jointNode.m_nodeId][i];
 			//m = glm::rotate(m, xy[0]/m_windowWidth, vec3(1.0f,0.0f,0.0f));
@@ -927,7 +1042,14 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 			const GeometryNode * geometryNode = static_cast<const GeometryNode *>(child);
 			pushMatrix();
 			multMatrix(child->trans);
-			updateShaderUniforms(m_shader, *geometryNode, m_view, matrixStack.top(), root, rotationMatrix, translationMatrix);
+			if(node.m_name.find("shell")==0 || node.m_name.find("undoshell")==0 ){
+				//cout<<node.m_name<<endl;
+				updateShaderUniformsShell(m_shader, *geometryNode, m_view, matrixStack.top(), root, rotationMatrix, translationMatrix);
+			}
+			else {
+				updateShaderUniforms(m_shader, *geometryNode, m_view, matrixStack.top(), root, rotationMatrix, translationMatrix);
+			}
+
 			popMatrix();
 
 			// Get the BatchInfo corresponding to the GeometryNode's unique MeshId.
@@ -939,6 +1061,7 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 			m_shader.disable();
 
 
+			/**************************************************
 			{
 				pushMatrix();
 				multMatrix(child->trans);
@@ -953,6 +1076,7 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 				glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
 				m_shader.disable();
 			}
+			****************************************************/
 		}
 
 		traverseNode(*child,root);
@@ -1276,13 +1400,7 @@ bool A5::mouseMoveEvent (
 					//unsigned int what = buffer[0] + (buffer[1] << 8) + (buffer[2] << 16);
 
 					unsigned int which = buffer[0]*m_rootNode->totalSceneNodes()/256;
-					//cout<<which<<endl;
-					for(int i=0;i<numOfNodes;i++){
-						//cout<<"i "<<i<<" "<<connectedToJoint[i]<<endl;
-					}
 
-					//cout<<which<<connectedToJoint[which+1]<<endl;
-					//cout<<which
 					which = nearbyint((float)buffer[0]*(float)m_rootNode->totalSceneNodes()/256.0f);
 
 
@@ -1297,12 +1415,7 @@ bool A5::mouseMoveEvent (
 
 
 
-					//cout<<(double)buffer[0]<<endl;
-					//cout<<what<<endl;
 
-					// I don't know if these are really necessary anymore.
-					// glFlush();
-					// glFinish();
 
 					CHECK_GL_ERRORS;
 
@@ -1355,7 +1468,6 @@ bool A5::mouseMoveEvent (
 	 		{
 	 			centreButtonPressed = false;
 
-				//cout<<"M X:"<<currXPos-startMouseXPosM<<" Y:"<<startMouseYPosM-currYPos<<endl;
 				double dX = currXPos-startMouseXPosM;
 				double dY = startMouseYPosM-currYPos;
 
