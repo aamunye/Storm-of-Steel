@@ -263,14 +263,38 @@ void A5::uploadVertexDataToVbos (
 		glGenBuffers( 1, &m_vbo_arcCircle );
 		glBindBuffer( GL_ARRAY_BUFFER, m_vbo_arcCircle );
 
-		float *pts = new float[ 2 * CIRCLE_PTS ];
+		float *pts = new float[ 2 * CIRCLE_PTS + 16 ];
 		for( size_t idx = 0; idx < CIRCLE_PTS; ++idx ) {
 			float ang = 2.0 * M_PI * float(idx) / CIRCLE_PTS;
 			pts[2*idx] = cos( ang );
 			pts[2*idx+1] = sin( ang );
 		}
 
-		glBufferData(GL_ARRAY_BUFFER, 2*CIRCLE_PTS*sizeof(float), pts, GL_STATIC_DRAW);
+		pts[2 * CIRCLE_PTS] = -1.25;
+		pts[2 * CIRCLE_PTS + 1] = 0;
+
+		pts[2 * CIRCLE_PTS + 2] = -0.5;
+		pts[2 * CIRCLE_PTS + 3] = 0;
+
+		pts[2 * CIRCLE_PTS + 4] = 0.5;
+		pts[2 * CIRCLE_PTS + 5] = 0;
+
+		pts[2 * CIRCLE_PTS + 6] = 1.25;
+		pts[2 * CIRCLE_PTS + 7] = 0;
+
+		pts[2 * CIRCLE_PTS + 8] = 0;
+		pts[2 * CIRCLE_PTS + 9] = 1.25;
+
+		pts[2 * CIRCLE_PTS + 10] = 0;
+		pts[2 * CIRCLE_PTS + 11] = 0.5;
+
+		pts[2 * CIRCLE_PTS + 12] = 0;
+		pts[2 * CIRCLE_PTS + 13] = -0.5;
+
+		pts[2 * CIRCLE_PTS + 14] = 0;
+		pts[2 * CIRCLE_PTS + 15] = -1.25;
+
+		glBufferData(GL_ARRAY_BUFFER, (2*CIRCLE_PTS+16)*sizeof(float), pts, GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		CHECK_GL_ERRORS;
@@ -853,11 +877,13 @@ void A5::draw() {
 
 
 
+
+
+	renderField();
+
 	if( circleAppear ){
 		renderArcCircle();
 	}
-
-	renderField();
 
 
 
@@ -879,11 +905,16 @@ void A5::renderField() {
 
 		//Draw the grid
 		glBindVertexArray( m_vao_field );
-		glUniform3f( col_uni, 1, 0, 0 );
+		//glUniform3f( col_uni, 1, 0, 0 );
 		//glDrawArrays( GL_LINES, 0, (3+DIM)*4 );
 		//glDrawArrays( GL_LINES, 0, 4 );
 		for(int i=0;i<FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2;i++){
-			glUniform3f( col_uni, (float)(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2-i+0.1)/(float)(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z)/2.0, 0.0f, (float)(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2-i+0.1)/(float)(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2)/2.0 );
+			if(do_picking) {
+				glUniform3f( col_uni, 0, 0, (double)i/(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2) );
+			} else {
+				glUniform3f( col_uni, (float)(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2-i+0.1)/(float)(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z)/2.0, 0.0f, (float)(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2-i+0.1)/(float)(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2)/2.0 );
+			}
+
 			glDrawArrays( GL_TRIANGLES, i*3, 3 );
 		}
 		//glDrawArrays( GL_TRIANGLES, 0, FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2*3 );
@@ -912,42 +943,9 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 	mat4 m(1.0f);
 
 	if(node.m_name=="shellRoot") {
-		shellTimeInterval++;
-
-		mat4 mm;
-		float xDistance = FIELD_LENGTH_X/2.0f;
-		float speed = 0.03f;
-		float x = -shellTimeInterval*speed;
-
-		if(-x>=xDistance){
-			shellTimeInterval = 0;
-			x = -shellTimeInterval*speed;
-		}
-		//float y = -2.0f*((-x/2.0f-5.0f))*((-x/2.0f-5.0f))+50.0f;
-		float g = -2.8f;
-		float b = (xDistance/4.0f)*(xDistance/4.0f)*g;
-		float y = g*((-x/2.0f-xDistance/4.0f))*((-x/2.0f-xDistance/4.0f))-b;
-
-		float zDistance = -FIELD_LENGTH_Z/2.0f;
-		float z = zDistance/xDistance*x;
-		//y=0.0f;
 
 
-		//cout<<y<<endl;
 
-		//mm = glm::translate( mm, vec3( -float(FIELD_LENGTH_X)/2.0f , 0, -float(FIELD_LENGTH_Z)/2.0f ) );
-		//mm = glm::translate( mm, vec3( 20.0f,0.0f,0.0f) );
-		mm = translate(mm, vec3(z,y,x));
-
-		//mm = glm::translate( mm, vec3( 0.0f,0.0f,-80.0f) );
-		//mm = translate(mm, vec3(0.0f,y,x));
-
-		float spinSpeed = 0.2f;
-
-
-		mm = rotate(mm, (float)M_PI, vec3(0.0f,1.0f,0.0f));
-		mm = rotate(mm, -atan(2.0f*g*(-x/2.0f-xDistance/4.0f)), vec3(1.0f,0.0f,0.0f));
-		mm = rotate(mm,shellTimeInterval*spinSpeed, vec3(0.0f,0.0f,1.0f));
 
 		//cout<<atan(4.0f*x/2.0f)<<endl;
 		//cout<<2.0f*g*(-x/2.0f-xDistance/4.0f)<<endl;
@@ -956,7 +954,7 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 
 
 
-		multMatrix(mm);
+		multMatrix(shellMat());
 	}
 
 	if(node.m_name=="shellHead"){
@@ -1043,7 +1041,6 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 			pushMatrix();
 			multMatrix(child->trans);
 			if(node.m_name.find("shell")==0 || node.m_name.find("undoshell")==0 ){
-				//cout<<node.m_name<<endl;
 				updateShaderUniformsShell(m_shader, *geometryNode, m_view, matrixStack.top(), root, rotationMatrix, translationMatrix);
 			}
 			else {
@@ -1084,6 +1081,46 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 	}
 	popMatrix();
 
+}
+
+glm::mat4 A5::shellMat(){
+	mat4 mm;
+	shellTimeInterval++;
+	float xDistance = FIELD_LENGTH_X/2.0f;
+	float speed = 0.03f;
+	float x = -shellTimeInterval*speed;
+
+	if(-x>=xDistance){
+		shellTimeInterval = 0;
+		x = -shellTimeInterval*speed;
+	}
+	//float y = -2.0f*((-x/2.0f-5.0f))*((-x/2.0f-5.0f))+50.0f;
+	float g = -2.8f;
+	float b = (xDistance/4.0f)*(xDistance/4.0f)*g;
+	float y = g*((-x/2.0f-xDistance/4.0f))*((-x/2.0f-xDistance/4.0f))-b;
+
+	float zDistance = -FIELD_LENGTH_Z/2.0f;
+	float z = zDistance/xDistance*x;
+	//y=0.0f;
+
+
+	//cout<<y<<endl;
+
+	//mm = glm::translate( mm, vec3( -float(FIELD_LENGTH_X)/2.0f , 0, -float(FIELD_LENGTH_Z)/2.0f ) );
+	//mm = glm::translate( mm, vec3( 20.0f,0.0f,0.0f) );
+	mm = translate(mm, vec3(z,y,x));
+
+	//mm = glm::translate( mm, vec3( 0.0f,0.0f,-80.0f) );
+	//mm = translate(mm, vec3(0.0f,y,x));
+
+	float spinSpeed = 0.2f;
+
+
+	mm = rotate(mm, (float)M_PI, vec3(0.0f,1.0f,0.0f));
+	mm = rotate(mm, -atan(2.0f*g*(-x/2.0f-xDistance/4.0f)), vec3(1.0f,0.0f,0.0f));
+	mm = rotate(mm,shellTimeInterval*spinSpeed, vec3(0.0f,0.0f,1.0f));
+
+	return mm;
 }
 
 void A5::pushMatrix() {
@@ -1175,18 +1212,39 @@ void A5::renderArcCircle() {
 		GLint m_location = m_shader_arcCircle.getUniformLocation( "M" );
 		float aspect = float(m_framebufferWidth)/float(m_framebufferHeight);
 		glm::mat4 M;
+
+		float sc = 0.05;
 		if( aspect > 1.0 ) {
-			M = glm::scale( glm::mat4(), glm::vec3( 0.5/aspect, 0.5, 1.0 ) );
+			M = glm::scale( glm::mat4(), glm::vec3( sc/aspect, sc, 1.0 ) );
+			//M = glm::translate(M, glm::vec3(2*mouseXLoc-m_framebufferWidth,0.0f,0.0f));
+			//cout<<m_framebufferWidth<<endl;
+			float a = (mouseXLoc-m_framebufferWidth/2)/m_framebufferWidth;
+			a *= 1/sc*2*aspect;
+
+			float b = -(mouseYLoc-m_framebufferHeight/2)/m_framebufferHeight;
+			b*= 1/sc*2;
+
+			M = glm::translate(M, glm::vec3(a, b, 0.0f));
 		} else {
-			M = glm::scale( glm::mat4(), glm::vec3( 0.5, 0.5*aspect, 1.0 ) );
+			M = glm::scale( glm::mat4(), glm::vec3( sc, sc*aspect, 1.0 ) );
+
+			float a = (mouseXLoc-m_framebufferWidth/2)/m_framebufferWidth;
+			a *= 1/sc*2;
+
+			float b = -(mouseYLoc-m_framebufferHeight/2)/m_framebufferHeight;
+			b*= 1/sc*2/aspect;
+
+			M = glm::translate(M, glm::vec3(a, b, 0.0f));
 		}
 		glUniformMatrix4fv( m_location, 1, GL_FALSE, value_ptr( M ) );
 		glDrawArrays( GL_LINE_LOOP, 0, CIRCLE_PTS );
+		glDrawArrays( GL_LINES,CIRCLE_PTS, 8 );
 	m_shader_arcCircle.disable();
 
 	glBindVertexArray(0);
 	CHECK_GL_ERRORS;
 }
+
 
 //----------------------------------------------------------------------------------------
 /*
@@ -1220,6 +1278,9 @@ bool A5::mouseMoveEvent (
 		double yPos
 ) {
 	bool eventHandled(false);
+
+	mouseXLoc = xPos;
+	mouseYLoc = yPos;
 
 	// Fill in with event handling code...
 	double xDiff = xPos - previousMouseXPos;
@@ -1332,6 +1393,64 @@ bool A5::mouseMoveEvent (
  		int mods
  ) {
  	bool eventHandled(false);
+
+	if (actions == GLFW_PRESS) {
+			if (!ImGui::IsMouseHoveringAnyWindow()) {
+	 			if( button==GLFW_MOUSE_BUTTON_LEFT && circleAppear )
+	 			{
+					//cout<<"look for field"<<endl;
+					do_picking = true;
+
+					glClearColor(1.0, 1.0, 1.0, 1.0 );
+					glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+					glClearColor(0.35, 0.35, 0.35, 1.0);
+
+					draw();
+
+					double xpos, ypos;
+					glfwGetCursorPos( m_window, &xpos, &ypos );
+
+					xpos *= double(m_framebufferWidth) / double(m_windowWidth);
+					// WTF, don't know why I have to measure y relative to the bottom of
+					// the window in this case.
+					ypos = m_windowHeight - ypos;
+					ypos *= double(m_framebufferHeight) / double(m_windowHeight);
+
+					GLubyte buffer[ 4 ] = { 0, 0, 0, 0 };
+					// A bit ugly -- don't want to swap the just-drawn false colours
+					// to the screen, so read from the back buffer.
+					glReadBuffer( GL_BACK );
+					// Actually read the pixel at the mouse location.
+					glReadPixels( int(xpos), int(ypos), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, buffer );
+
+					unsigned int which = (float)buffer[2]*(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2)/256;
+
+					which = nearbyint((float)buffer[2]*(float)(FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2.0f)/256.0f);
+
+
+					bool bOnlyBlue = (int)buffer[0]==0 && (int)buffer[1]==0;
+					if(!bOnlyBlue){
+						do_picking = false;
+						return eventHandled;
+					}
+
+					cout<<which<<endl;
+
+					int ii = which*3;
+					cout<<fieldTriangesArray[ii]<<fieldTriangesArray[ii+1]<<fieldTriangesArray[ii+2]<<endl;
+					cout<<endl;
+
+
+
+					do_picking = false;
+
+					CHECK_GL_ERRORS;
+
+				}
+			}
+			return eventHandled;
+		}
+
 
  	if (actions == GLFW_PRESS) {
 		if ( currentMode == 0 ) {

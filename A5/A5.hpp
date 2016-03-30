@@ -60,6 +60,9 @@ protected:
 	void renderField();
 	void traverseNode(SceneNode &node, SceneNode &root);
 
+	double mouseXLoc = 0.0f;
+	double mouseYLoc = 0.0f;
+
 	glm::mat4 m_perspective;
 	glm::mat4 m_view;
 	glm::mat4 m_flyover;
@@ -101,8 +104,8 @@ protected:
 	static const size_t DIM = 10;
 	const float FIELD_LENGTH_X = 20.0f;
 	const float FIELD_LENGTH_Z = 15.0f;
-	static const size_t FIELD_SEGMENTS_X = 100;
-	static const size_t FIELD_SEGMENTS_Z = 40;
+	static const size_t FIELD_SEGMENTS_X = 10;
+	static const size_t FIELD_SEGMENTS_Z = 5;
 	glm::vec3 fieldArray[FIELD_SEGMENTS_X][FIELD_SEGMENTS_Z];
 	glm::vec3 fieldTriangesArray[FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2*3];
 
@@ -188,6 +191,8 @@ protected:
 			 const glm::mat4 & rotationMatrix,
 			 const glm::mat4 & translationMatrix
 	);
+
+	glm::mat4 shellMat();
 
 	std::vector<bool> connectedToJoint;
 
