@@ -17,6 +17,7 @@
 #include <stack>
 #include <vector>
 #include <ctime>
+#include <algorithm>
 
 struct LightSource {
 	glm::vec3 position;
@@ -104,14 +105,25 @@ protected:
 	static const size_t DIM = 10;
 	const float FIELD_LENGTH_X = 20.0f;
 	const float FIELD_LENGTH_Z = 15.0f;
-	static const size_t FIELD_SEGMENTS_X = 10;
-	static const size_t FIELD_SEGMENTS_Z = 5;
+	static const size_t FIELD_SEGMENTS_X = 100;
+	static const size_t FIELD_SEGMENTS_Z = 50;
 	glm::vec3 fieldArray[FIELD_SEGMENTS_X][FIELD_SEGMENTS_Z];
 	glm::vec3 fieldTriangesArray[FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2*3];
 
 	int a=0;
+	float movementSpeed = 0.0001f;
+
 	int shellTimeInterval=0;
 	glm::vec4 rightFoot = glm::vec4(0.0f,0.0f,0.0f,1.0f);
+	glm::vec4 leftFoot = glm::vec4(0.0f,0.0f,0.0f,1.0f);
+	glm::vec4 centerFoot = glm::vec4(0.0f,0.0f,0.0f,1.0f);
+
+	bool puppetVisible = false;
+
+
+	bool shellVisible = false;
+	float xDistance = 0.0f;
+	float zDistance = 0.0f;
 
 
 	// BatchInfoMap is an associative container that maps a unique MeshId to a BatchInfo
@@ -132,6 +144,7 @@ protected:
 	void resetFieldArray();
 	void updateFieldTriangesArray();
 	float randomGenerator();
+	bool valuesIntersect(float aL,float aH, float bL, float bH);
 
 	int currentMode;
 

@@ -376,9 +376,10 @@ void A5::resetFieldArray() {
 		float xSegLength = (float)FIELD_LENGTH_X/(float)(FIELD_SEGMENTS_X - 1);
 		for(int z=0;z<FIELD_SEGMENTS_Z;z++){
 			float zSegLength = (float)FIELD_LENGTH_Z/(float)(FIELD_SEGMENTS_Z - 1);
-			//fieldArray[x][z]=vec3(xSegLength*x,0.0f,zSegLength*z);
-			fieldArray[x][z]=vec3(xSegLength*x,(randomGenerator()*2.0f-1.0f)/6.0f,zSegLength*z);
-			//fieldArray[x][z]=vec3(xSegLength*x,-sin(x*xSegLength*2*M_PI/FIELD_LENGTH_X)*2.0f,zSegLength*z);
+			fieldArray[x][z]=vec3(xSegLength*x,0.0f,zSegLength*z);
+
+			fieldArray[x][z].y += (randomGenerator()*2.0f-1.0f)/6.0f;
+			fieldArray[x][z].y += 3.0f*sin(xSegLength*x*3.5f*M_PI/FIELD_LENGTH_X)-2.0f;
 		}
 	}
 }
@@ -632,38 +633,50 @@ void A5::updateShaderUniforms(
 		const glm::mat4 & translationMatrix
 ) {
 
+	if(!puppetVisible){
+		return;
+	}
+
 	shader.enable();
 	{
 		mat4 W;
 
 		W = glm::translate( W, vec3( -float(FIELD_LENGTH_X)/2.0f, 0, -float(FIELD_LENGTH_Z)/2.0f ) );
+		//W = glm::translate( W, vec3( -float(FIELD_LENGTH_X)/2.0f + FIELD_LENGTH_X/2.0, 0, -float(FIELD_LENGTH_Z)/2.0f + float(FIELD_LENGTH_Z)/2.0f ));
+
+		mat4 m_offset;
+		//m_offset = glm::translate( mat4(1.0f), vec3( FIELD_LENGTH_X/2.0, 0.0f, float(FIELD_LENGTH_Z)/2.0f ) );
+		m_offset = glm::translate( mat4(1.0f), vec3( 0.0f, 0.0f, float(FIELD_LENGTH_Z)/2.0f ) );
+
+		W = m_offset * W;
+
+
+		//W = glm::translate( W, vec3( -float(FIELD_LENGTH_X)/2.0f + 0.15f, 0, -float(FIELD_LENGTH_Z)/2.0f + float(FIELD_LENGTH_Z)/2.0f) );
 
 		a++;
-		if(a*0.001f>FIELD_LENGTH_X){
+
+
+		if(a*movementSpeed>FIELD_LENGTH_X){
 			a=0;
 		}
 		//a%=FIELD_SEGMENTS_X;
 
-		mat4 m_movement;
-		m_movement = glm::translate( m_movement, vec3( a*0.001f, 0.0f, 0.0f ) );
+		mat4 m_movement(1.0f);
+		m_movement = glm::translate( m_movement, vec3( a*movementSpeed, 0.0f, 0.0f ) );
 
 		if(node.m_name=="rightFoot") {
-			rightFoot = m_movement * matrixStack * vec4(0.0f,0.0f,0.0f,1.0f);
-			/*
-			cout<<"x "<<rightFoot.x<<endl;
-			cout<<"y "<<rightFoot.y<<endl;
-			cout<<"z "<<rightFoot.z<<endl;
-
-
-			float xSegLength = (float)FIELD_LENGTH_X/(float)(FIELD_SEGMENTS_X - 1);
-			cout<<(int)(rightFoot.x/xSegLength)<<endl;
-			cout<<endl;
-			*/
+			rightFoot = m_movement * m_offset * matrixStack * vec4(0.0f,0.0f,0.0f,1.0f);
 
 		}
+		if(node.m_name=="leftFoot") {
+			leftFoot = m_movement * m_offset * matrixStack * vec4(0.0f,0.0f,0.0f,1.0f);
+		}
+		centerFoot = (leftFoot+rightFoot)/2.0f;
 		float xSegLength = (float)FIELD_LENGTH_X/(float)(FIELD_SEGMENTS_X - 1);
 		float zSegLength = (float)FIELD_LENGTH_Z/(float)(FIELD_SEGMENTS_Z - 1);
-		W = glm::translate( W, vec3(0.0f, fieldArray[(int)(rightFoot.x/xSegLength)][(int)(rightFoot.z/zSegLength)].y+1.0f, 0.0f));
+		W = glm::translate( W, vec3(0.0f, fieldArray[(int)((centerFoot.x)/xSegLength)][(int)((centerFoot.z)/zSegLength)].y+1.0f, 0.0f));
+
+		//cout<<fieldArray[(int)((centerFoot.x)/xSegLength)][(int)((centerFoot.z)/zSegLength)].y+1.0f<<endl;
 
 
 		//cout<<fieldArray[(int)(rightFoot.x/xSegLength)][(int)(rightFoot.z/zSegLength)].y<<endl;
@@ -729,6 +742,8 @@ void A5::updateShaderUniforms2(
 		const glm::mat4 & translationMatrix
 ) {
 
+
+
 	shader.enable();
 	{
 		mat4 W;
@@ -792,8 +807,14 @@ void A5::updateShaderUniformsShell(
 		const glm::mat4 & translationMatrix
 ) {
 
+	//cout<<"updateShaderUniformsShell "<<node.m_name<<endl;
+
 	shader.enable();
 	{
+		cout<<node.m_name<<endl;
+		if(!shellVisible){
+			return;
+		}
 		mat4 W;
 		W = mat4(1.0f);
 		W = glm::translate( W, vec3( -float(FIELD_LENGTH_X)/2.0f + FIELD_LENGTH_X , 0, -float(FIELD_LENGTH_Z)/2.0f + float(FIELD_LENGTH_Z)/2.0f ) );
@@ -803,6 +824,104 @@ void A5::updateShaderUniformsShell(
 		GLint location = shader.getUniformLocation("ModelView");
 		//mat4 modelView = viewMatrix * translationMatrix * root.trans * rotationMatrix * inverse(root.trans) * matrixStack;
 		mat4 modelView = m_view * m_flyover * m_zoom * W * root.trans * inverse(root.trans) * matrixStack;
+
+		if(node.m_name=="shellHead"){
+			//cout<<translate(matrixStack*vec4( 0.0f, 0.0f, 0.0f , 1.0f),vec3(20.0f,0.0f,7.5f))<<endl;
+			vec4 warHeadCoordinates = matrixStack * vec4(0.0f,0.0f,0.0f,1.0f);
+			warHeadCoordinates.x += FIELD_LENGTH_X;
+			warHeadCoordinates.z += FIELD_LENGTH_Z/2.0f;
+			//cout<<warHeadCoordinates<<endl;
+
+			vec3 wHead = vec3(warHeadCoordinates);
+
+			float sz = 0.125f;
+
+			//sz = 2.5f;
+			vec3 wHeadLow = wHead;
+			wHeadLow.x = wHead.x - sz;
+			wHeadLow.y = wHead.y - sz;
+			wHeadLow.z = wHead.z - sz;
+
+			vec3 wHeadHigh = wHead;
+			wHeadHigh.x = wHead.x + sz;
+			wHeadHigh.y = wHead.y + sz;
+			wHeadHigh.z = wHead.z + sz;
+
+			{
+				// Dynamic collision detection with puppet
+				float xSegLength = (float)FIELD_LENGTH_X/(float)(FIELD_SEGMENTS_X - 1);
+				float zSegLength = (float)FIELD_LENGTH_Z/(float)(FIELD_SEGMENTS_Z - 1);
+
+				int theX = (int)((centerFoot.x)/xSegLength);
+				int theZ = (int)((centerFoot.z)/zSegLength);
+
+				cout<<fieldArray[theX][theZ].x<<endl;
+				cout<<fieldArray[theX][theZ].y<<endl;
+				cout<<fieldArray[theX][theZ].z<<endl;
+				cout<<centerFoot<<endl;
+				cout<<endl;
+
+				vec3 puppetLow;
+				vec3 puppetHigh;
+
+				// size of the box
+				float xFactor = 5.0f;
+				float yFactor = 2.0f;
+				float zFactor = 7.0f;
+
+				puppetLow.x = fieldArray[theX][theZ].x - xFactor * 0.15f;
+				puppetHigh.x = fieldArray[theX][theZ].x + xFactor * 0.2f;
+
+				puppetLow.y = fieldArray[theX][theZ].y + 1.0f - yFactor * 0.9f;
+				puppetHigh.y = fieldArray[theX][theZ].y +1.0f + yFactor * 0.45f;
+
+				puppetLow.z = fieldArray[theX][theZ].z - zFactor * 0.35f;
+				puppetHigh.z = fieldArray[theX][theZ].z + zFactor * 0.35f;
+
+				bool b = valuesIntersect(wHeadLow.x,wHeadHigh.x,puppetLow.x,puppetHigh.x);
+				b &= valuesIntersect(wHeadLow.y,wHeadHigh.y,puppetLow.y,puppetHigh.y);
+				b &= valuesIntersect(wHeadLow.z,wHeadHigh.z,puppetLow.z,puppetHigh.z);
+
+				if(b){
+					cout<<"DYNAMIC HIT"<<endl;
+					shellVisible = false;
+					puppetVisible = false;
+
+					//glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
+					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				}
+
+			}
+
+			for(int i=0;i<(FIELD_SEGMENTS_X-1)*(FIELD_SEGMENTS_Z-1)*2*3;i+=3) {
+				// static collision detection with the field
+
+
+				vec3 triangleLow;
+				triangleLow.x = std::min(std::min(fieldTriangesArray[i].x, fieldTriangesArray[i+1].x), fieldTriangesArray[i+2].x);
+				triangleLow.y = std::min(std::min(fieldTriangesArray[i].y, fieldTriangesArray[i+1].y), fieldTriangesArray[i+2].y);
+				triangleLow.z = std::min(std::min(fieldTriangesArray[i].z, fieldTriangesArray[i+1].z), fieldTriangesArray[i+2].z);
+
+				vec3 triangleHigh;
+				triangleHigh.x = std::max(std::max(fieldTriangesArray[i].x, fieldTriangesArray[i+1].x), fieldTriangesArray[i+2].x);
+				triangleHigh.y = std::max(std::max(fieldTriangesArray[i].y, fieldTriangesArray[i+1].y), fieldTriangesArray[i+2].y);
+				triangleHigh.z = std::max(std::max(fieldTriangesArray[i].z, fieldTriangesArray[i+1].z), fieldTriangesArray[i+2].z);
+
+				bool b = valuesIntersect(wHeadLow.x,wHeadHigh.x,triangleLow.x,triangleHigh.x);
+				b &= valuesIntersect(wHeadLow.y,wHeadHigh.y,triangleLow.y,triangleHigh.y);
+				b &= valuesIntersect(wHeadLow.z,wHeadHigh.z,triangleLow.z,triangleHigh.z);
+
+				if(b){
+					cout<<"STATIC HIT"<<endl;
+					shellVisible = false;
+					glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				}
+
+			}
+
+
+		}
+
 		glUniformMatrix4fv(location, 1, GL_FALSE, value_ptr(modelView));
 		CHECK_GL_ERRORS;
 
@@ -846,11 +965,20 @@ void A5::updateShaderUniformsShell(
 
 }
 
+bool A5::valuesIntersect(float aL,float aH, float bL, float bH){
+	if(bL>=aL && bL<=aH)return true;
+	if(bH>=aL && bH<=aH)return true;
+	if(aL>=bL && aL<=bH)return true;
+	if(aH>=bL && aH<=bH)return true;
+	return false;
+}
+
 //----------------------------------------------------------------------------------------
 /*
  * Called once per frame, after guiLogic().
  */
 void A5::draw() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glEnable(GL_CULL_FACE);
 	if(cullFront && cullBack){
@@ -916,6 +1044,7 @@ void A5::renderField() {
 			}
 
 			glDrawArrays( GL_TRIANGLES, i*3, 3 );
+
 		}
 		//glDrawArrays( GL_TRIANGLES, 0, FIELD_SEGMENTS_X*FIELD_SEGMENTS_Z*2*3 );
 	m_shader_field.disable();
@@ -1002,28 +1131,9 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 	//node.set_parent_joint(node.m_nodeId);
 
 	for (SceneNode * child : node.children) {
-		/*
-		if(node.m_nodeType == NodeType::GeometryNode) {
-			// parent is geometry; get parent's joint parent
-			child->set_parent_joint(node.parentJoint);
-			//cout<<node<<" "<<node.parentJoint<<endl;
-		} else if (node.m_nodeType == NodeType::JointNode) {
-			// parent is joint; set parent as joint parent
-			child->set_parent_joint(node.m_nodeId);
-
-		} else {
-			// parent is root node
-		}
-		*/
 		if(child->m_name=="head"){
 			headId = child->m_nodeId;
 			jointHeadId = parentJoint[headId];
-			//cout<<headId<<" "<<jointHeadId<<endl;
-			//multMatrix(inverse(m));
-			//popMatrix();
-			//pushMatrix();
-			//multMatrix(headRotationMatrix);
-			//multMatrix(node.trans);
 		}
 
 
@@ -1041,10 +1151,16 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 			pushMatrix();
 			multMatrix(child->trans);
 			if(node.m_name.find("shell")==0 || node.m_name.find("undoshell")==0 ){
-				updateShaderUniformsShell(m_shader, *geometryNode, m_view, matrixStack.top(), root, rotationMatrix, translationMatrix);
+				if(shellVisible){
+					updateShaderUniformsShell(m_shader, *geometryNode, m_view, matrixStack.top(), root, rotationMatrix, translationMatrix);
+				}
+
 			}
 			else {
-				updateShaderUniforms(m_shader, *geometryNode, m_view, matrixStack.top(), root, rotationMatrix, translationMatrix);
+				if(puppetVisible) {
+					updateShaderUniforms(m_shader, *geometryNode, m_view, matrixStack.top(), root, rotationMatrix, translationMatrix);
+				}
+
 			}
 
 			popMatrix();
@@ -1054,7 +1170,20 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 
 			//-- Now render the mesh:
 			m_shader.enable();
-			glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
+			//cout<<node.m_name<<endl;
+			bool bb;
+			if(node.m_name.find("shell")==0 || node.m_name.find("undoshell")==0 ){
+				bb = shellVisible;
+			}
+			else {
+				bb = puppetVisible;
+			}
+
+			if(bb){
+				glDrawArrays(GL_TRIANGLES, batchInfo.startIndex, batchInfo.numIndices);
+			}
+
+
 			m_shader.disable();
 
 
@@ -1084,36 +1213,36 @@ void A5::traverseNode(SceneNode &node, SceneNode &root) {
 }
 
 glm::mat4 A5::shellMat(){
+	//float xDistance = FIELD_LENGTH_X/2.0f;
+	//float zDistance = -FIELD_LENGTH_Z/2.0f;
+
+
+	float speed = 0.1f;
+	float g = -0.8f;
+	float spinSpeed = 0.2f;
+
+
 	mat4 mm;
 	shellTimeInterval++;
-	float xDistance = FIELD_LENGTH_X/2.0f;
-	float speed = 0.03f;
+
 	float x = -shellTimeInterval*speed;
 
-	if(-x>=xDistance){
+	if(-x>=FIELD_LENGTH_X){
 		shellTimeInterval = 0;
+		shellVisible = false;
 		x = -shellTimeInterval*speed;
 	}
 	//float y = -2.0f*((-x/2.0f-5.0f))*((-x/2.0f-5.0f))+50.0f;
-	float g = -2.8f;
+
 	float b = (xDistance/4.0f)*(xDistance/4.0f)*g;
 	float y = g*((-x/2.0f-xDistance/4.0f))*((-x/2.0f-xDistance/4.0f))-b;
 
-	float zDistance = -FIELD_LENGTH_Z/2.0f;
+
 	float z = zDistance/xDistance*x;
-	//y=0.0f;
 
-
-	//cout<<y<<endl;
-
-	//mm = glm::translate( mm, vec3( -float(FIELD_LENGTH_X)/2.0f , 0, -float(FIELD_LENGTH_Z)/2.0f ) );
-	//mm = glm::translate( mm, vec3( 20.0f,0.0f,0.0f) );
 	mm = translate(mm, vec3(z,y,x));
 
-	//mm = glm::translate( mm, vec3( 0.0f,0.0f,-80.0f) );
-	//mm = translate(mm, vec3(0.0f,y,x));
 
-	float spinSpeed = 0.2f;
 
 
 	mm = rotate(mm, (float)M_PI, vec3(0.0f,1.0f,0.0f));
@@ -1395,9 +1524,13 @@ bool A5::mouseMoveEvent (
  	bool eventHandled(false);
 
 	if (actions == GLFW_PRESS) {
+		cout<<"press"<<endl;
 			if (!ImGui::IsMouseHoveringAnyWindow()) {
 	 			if( button==GLFW_MOUSE_BUTTON_LEFT && circleAppear )
 	 			{
+					if(shellVisible){
+						return eventHandled;
+					}
 					//cout<<"look for field"<<endl;
 					do_picking = true;
 
@@ -1437,10 +1570,22 @@ bool A5::mouseMoveEvent (
 					cout<<which<<endl;
 
 					int ii = which*3;
-					cout<<fieldTriangesArray[ii]<<fieldTriangesArray[ii+1]<<fieldTriangesArray[ii+2]<<endl;
-					cout<<endl;
+					//cout<<fieldTriangesArray[ii]<<fieldTriangesArray[ii+1]<<fieldTriangesArray[ii+2]<<endl;
+					//cout<<endl;
 
+					vec3 averTriMats = (fieldTriangesArray[ii] + fieldTriangesArray[ii+1] + fieldTriangesArray[ii+2])/3.0f;
+					cout<<averTriMats<<endl;
 
+					shellVisible = true;
+					shellTimeInterval = 0;
+
+					//xDistance = FIELD_LENGTH_X-averTriMats.x + (randomGenerator()*2-1)*FIELD_LENGTH_X/10;
+					//zDistance = averTriMats.z-FIELD_LENGTH_Z/2.0f + (randomGenerator()*2-1)*FIELD_LENGTH_X/10;
+
+					xDistance = FIELD_LENGTH_X-averTriMats.x ;
+					zDistance = averTriMats.z-FIELD_LENGTH_Z/2.0f ;
+
+					//cout<<randomGenerator()*2-1<<endl;
 
 					do_picking = false;
 
@@ -1822,6 +1967,15 @@ bool A5::keyInputEvent (
 		// Fly towards the right
 		if ( key == GLFW_KEY_D ){
 			m_flyover = glm::translate(m_flyover, glm::vec3(-0.2f,0.0f,0.0f));
+			eventHandled = true;
+		}
+
+		if ( key == GLFW_KEY_SPACE ){
+			//m_flyover = glm::translate(m_flyover, glm::vec3(-0.2f,0.0f,0.0f));
+			//cout<<"space"<<endl;
+			if(puppetVisible)return eventHandled;
+			puppetVisible = true;
+			a = 0;
 			eventHandled = true;
 		}
 	}
