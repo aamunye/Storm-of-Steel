@@ -24,12 +24,12 @@ ifeq ($(config),debug)
   TARGETDIR  = ..
   TARGET     = $(TARGETDIR)/A5
   DEFINES   += -DDEBUG
-  INCLUDES  += -I../../shared -I../../shared/include -I../../shared/gl3w -I../../shared/imgui
+  INCLUDES  += -I../../shared -I../../shared/include -I../../shared/gl3w -I../../shared/imgui -I../irrKlang-64bit-1.5.0/include -I..
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
-  CFLAGS    += $(CPPFLAGS) $(ARCH) -g -std=c++11
+  CFLAGS    += $(CPPFLAGS) $(ARCH) -g -std=c++11 -I="./irrKlang-64bit-1.5.0/include" -L="/usr/lib" ../irrKlang-64bit-1.5.0/bin/linux-gcc-64/libIrrKlang.so -pthread
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -L../../lib
-  LIBS      += -lcs488-framework -limgui -lglfw3 -llua -lGL -lXinerama -lXcursor -lXxf86vm -lXi -lXrandr -lX11 -lstdc++ -ldl -lpthread
+  LDFLAGS   += -L../../lib -L../irrKlang-64bit-1.5.0/lib/Winx64-visualStudio/irrKlang.lib -L../irrKlang-64bit-1.5.0/bin/linux-gcc-64/libIrrKlang.so -L../irrKlang-64bit-1.5.0/bin/linux-gcc-64/ikpMP3.so -L../irrKlang-64bit-1.5.0/bin/linux-gcc-64/ikpFlac.so
+  LIBS      += -lcs488-framework -limgui -lglfw3 -llua -lGL -lXinerama -lXcursor -lXxf86vm -lXi -lXrandr -lX11 -lstdc++ -ldl -lpthread -lirrKlang
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += 
   LINKCMD    = $(CXX) -o $(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES) $(ARCH) $(LIBS)
@@ -46,12 +46,12 @@ ifeq ($(config),release)
   TARGETDIR  = ..
   TARGET     = $(TARGETDIR)/A5
   DEFINES   += -DNDEBUG
-  INCLUDES  += -I../../shared -I../../shared/include -I../../shared/gl3w -I../../shared/imgui
+  INCLUDES  += -I../../shared -I../../shared/include -I../../shared/gl3w -I../../shared/imgui -I../irrKlang-64bit-1.5.0/include -I..
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
-  CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -std=c++11
+  CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -std=c++11 -I="./irrKlang-64bit-1.5.0/include" -L="/usr/lib" ../irrKlang-64bit-1.5.0/bin/linux-gcc-64/libIrrKlang.so -pthread
   CXXFLAGS  += $(CFLAGS) 
-  LDFLAGS   += -s -L../../lib
-  LIBS      += -lcs488-framework -limgui -lglfw3 -llua -lGL -lXinerama -lXcursor -lXxf86vm -lXi -lXrandr -lX11 -lstdc++ -ldl -lpthread
+  LDFLAGS   += -s -L../../lib -L../irrKlang-64bit-1.5.0/lib/Winx64-visualStudio/irrKlang.lib -L../irrKlang-64bit-1.5.0/bin/linux-gcc-64/libIrrKlang.so -L../irrKlang-64bit-1.5.0/bin/linux-gcc-64/ikpMP3.so -L../irrKlang-64bit-1.5.0/bin/linux-gcc-64/ikpFlac.so
+  LIBS      += -lcs488-framework -limgui -lglfw3 -llua -lGL -lXinerama -lXcursor -lXxf86vm -lXi -lXrandr -lX11 -lstdc++ -ldl -lpthread -lirrKlang
   RESFLAGS  += $(DEFINES) $(INCLUDES) 
   LDDEPS    += 
   LINKCMD    = $(CXX) -o $(TARGET) $(OBJECTS) $(LDFLAGS) $(RESOURCES) $(ARCH) $(LIBS)

@@ -19,6 +19,36 @@
 #include <ctime>
 #include <algorithm>
 
+//SOUND STUFF:START
+/*
+#include <stdio.h>
+#include <iostream>
+#include <irrKlang.h>
+
+
+// include console I/O methods (conio.h for windows, our wrapper in linux)
+#if defined(WIN32)
+#include <conio.h>
+#else
+#include "irrKlang-64bit-1.5.0/examples/common/conio.h"
+#endif
+
+// Also, we tell the compiler to use the namespaces 'irrklang'.
+// All classes and functions of irrKlang can be found in the namespace 'irrklang'.
+// If you want to use a class of the engine,
+// you'll have to type an irrklang:: before the name of the class.
+// For example, to use the ISoundEngine, write: irrklang::ISoundEngine. To avoid having
+// to put irrklang:: before of the name of every class, we tell the compiler that
+// we use that namespaces here.
+using namespace irrklang;
+
+// To be able to use the irrKlang.dll file, we need to link with the irrKlang.lib.
+// We could set this option in the project settings, but to make it easy we use
+// a pragma comment:
+#pragma comment(lib, "irrKlang.lib") // link with irrKlang.dll
+*/
+//SOUND STUFF:END
+
 struct LightSource {
 	glm::vec3 position;
 	glm::vec3 rgbIntensity;

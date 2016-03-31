@@ -6,11 +6,17 @@ includeDirList = {
     "../shared",
     "../shared/include",
     "../shared/gl3w",
-    "../shared/imgui"
+    "../shared/imgui",
+    "./irrKlang-64bit-1.5.0/include",
+    "."
 }
 
 libDirectories = {
-    "../lib"
+    "../lib",
+    "./irrKlang-64bit-1.5.0/lib/Winx64-visualStudio/irrKlang.lib",
+    "./irrKlang-64bit-1.5.0/bin/linux-gcc-64/libIrrKlang.so",
+    "./irrKlang-64bit-1.5.0/bin/linux-gcc-64/ikpMP3.so",
+    "./irrKlang-64bit-1.5.0/bin/linux-gcc-64/ikpFlac.so",
 }
 
 
@@ -39,7 +45,8 @@ if os.get() == "linux" then
         "X11",
         "stdc++",
         "dl",
-        "pthread"
+        "pthread",
+	"irrKlang"
     }
 end
 
@@ -48,7 +55,7 @@ if os.get() == "macosx" then
     linkOptionList = { "-framework IOKit", "-framework Cocoa", "-framework CoreVideo", "-framework OpenGL" }
 end
 
-buildOptions = {"-std=c++11"}
+buildOptions = {"-std=c++11","-I=\"./irrKlang-64bit-1.5.0/include\"", "-L=\"/usr/lib\"", "../irrKlang-64bit-1.5.0/bin/linux-gcc-64/libIrrKlang.so", "-pthread"}
 
 solution "CS488-Projects"
     configurations { "Debug", "Release" }

@@ -24,7 +24,7 @@ ifeq ($(config),debug)
   TARGETDIR  = ../lib
   TARGET     = $(TARGETDIR)/libimgui.a
   DEFINES   += -DDEBUG
-  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/imgui/examples/opengl3_example -I../shared/imgui/examples/libs/gl3w
+  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/OpenALBuild -I../shared/Alc -I../shared/OpenAL32/Include -I../shared/OpenAL32 -I../shared/imgui/examples/opengl3_example -I../shared/imgui/examples/libs/gl3w
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g
   CXXFLAGS  += $(CFLAGS) 
@@ -46,7 +46,7 @@ ifeq ($(config),release)
   TARGETDIR  = ../lib
   TARGET     = $(TARGETDIR)/libimgui.a
   DEFINES   += -DNDEBUG
-  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/imgui/examples/opengl3_example -I../shared/imgui/examples/libs/gl3w
+  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/OpenALBuild -I../shared/Alc -I../shared/OpenAL32/Include -I../shared/OpenAL32 -I../shared/imgui/examples/opengl3_example -I../shared/imgui/examples/libs/gl3w
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2
   CXXFLAGS  += $(CFLAGS) 

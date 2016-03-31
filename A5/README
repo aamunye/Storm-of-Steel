@@ -1,18 +1,34 @@
 Compiling:
-The compiling process has not been modified.
+
 To compile and run the program, make sure that the objects in the cs489-a0a1
-folder have been built first, then run the following commands from the A1
+folder have been premaked first, then run the following commands from the A5
 directory, enter:
-  premake4 clean
   premake4 gmake
-  make
-  ./A5 [puppet Location]
+  ./run.sh
 
 As for this program, it was written and tested on the gl32.student.cs machine.
 
 Manual:
-Note: One thing I didn't complete during this assignment was joint constraints.
-So I do have 15 DOF's but it wasn't constrained.
+The controls are fairly simple.  This is a fairly simple "game" with one solder(puppet)
+and one missile.
 
-I didn't have the time to write out the entire hierarchy, but note that I used
-dummy nodes to undo scaling to get around the scaling problem.
+1) Clicking on the W,A,S,D buttons makes the camera fly over the hill.
+2) Scrolling the mouse up and down zooms in and out.
+3) Press space and a solder will start moving forwards(you can't control it, it just moves forward)
+4) Click on a point on the screen to launch the rocket to that point.
+  - Note that the rocket doesn't aim directly at the target,
+  because there is a wind component that perturbs the eventual destination of the payload
+5) When the rocket hits the ground or the solder, it disappears until you click on a point again
+6) When the soldier is hit, they disappear until you press enter again.
+
+Objectives:
+1) Modelling the scene - YES
+2) UI - YES
+3) Texture Mapping - NO
+4) Keyframe based Animation - using a linear system - PARTIALLY
+5) Sound(sync) - NO
+6) Static Collision detection - YES
+7) Dynamic Collision detection - YES
+8) Bump Mapping - NO
+9) Shadows using Light mapping - NO
+10) Physics Engine(Gravity and wind) - YES

@@ -54,6 +54,15 @@ A5::~A5()
  */
 void A5::init()
 {
+	//SOUND:Begin
+	/*
+	ISoundEngine* engine = createIrrKlangDevice();
+	if (!engine){
+		cout<<"got here"<<endl;
+	}
+	*/
+	//SOUND:End
+
 	// Set the background colour.
 	glClearColor(0.35, 0.35, 0.35, 1.0);
 
@@ -134,6 +143,7 @@ void A5::init()
 	numOfNodes = m_rootNode->totalSceneNodes();
 
 	parentJoint = vector<int>(numOfNodes,-1);
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -561,7 +571,7 @@ void A5::guiLogic()
 	ImGuiWindowFlags windowFlags(ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_MenuBar);
 	float opacity(0.5f);
 
-
+	/*
 	ImGui::Begin("Menu", &showDebugWindow, ImVec2(100,100), opacity,
 			windowFlags);
 		if (ImGui::BeginMenuBar()) {
@@ -619,6 +629,7 @@ void A5::guiLogic()
 
 		//ImGui::Text( "Framerate: %.1f FPS",updateShader
 	ImGui::End();
+	*/
 }
 
 //----------------------------------------------------------------------------------------
@@ -1579,11 +1590,11 @@ bool A5::mouseMoveEvent (
 					shellVisible = true;
 					shellTimeInterval = 0;
 
-					//xDistance = FIELD_LENGTH_X-averTriMats.x + (randomGenerator()*2-1)*FIELD_LENGTH_X/10;
-					//zDistance = averTriMats.z-FIELD_LENGTH_Z/2.0f + (randomGenerator()*2-1)*FIELD_LENGTH_X/10;
+					xDistance = FIELD_LENGTH_X-averTriMats.x + (randomGenerator()*2-1)*FIELD_LENGTH_X/7;
+					zDistance = averTriMats.z-FIELD_LENGTH_Z/2.0f + (randomGenerator()*2-1)*FIELD_LENGTH_X/7;
 
-					xDistance = FIELD_LENGTH_X-averTriMats.x ;
-					zDistance = averTriMats.z-FIELD_LENGTH_Z/2.0f ;
+					//xDistance = FIELD_LENGTH_X-averTriMats.x ;
+					//zDistance = averTriMats.z-FIELD_LENGTH_Z/2.0f ;
 
 					//cout<<randomGenerator()*2-1<<endl;
 
@@ -1882,7 +1893,7 @@ bool A5::keyInputEvent (
 
 	if( action == GLFW_PRESS ) {
 		if( key == GLFW_KEY_M ) {
-			show_gui = !show_gui;
+			//show_gui = !show_gui;
 			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_Q ) {
@@ -1890,61 +1901,61 @@ bool A5::keyInputEvent (
 			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_P ) {
-			currentMode = 0;
+			//currentMode = 0;
 			eventHandled = true;
 		}
 		if ( key == GLFW_KEY_J ) {
-			currentMode = 1;
+			//currentMode = 1;
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_I ) {
-			resetPosition();
+			//resetPosition();
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_O ) {
-			resetOrientation();
+			//resetOrientation();
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_N ) {
-			resetJoints();
+			//resetJoints();
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_A ) {
-			resetAll();
+			//resetAll();
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_U ) {
-			undoChange();
+			//undoChange();
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_R ) {
-			redoChange();
+			//redoChange();
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_C ) {
-			drawCircle();
+			//drawCircle();
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_Z ) {
-			zBuffer();
+			//zBuffer();
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_B ) {
-			backCull();
+			///backCull();
 			eventHandled = true;
 		}
 
 		if ( key == GLFW_KEY_F ) {
-			frontCull();
+			//frontCull();
 			eventHandled = true;
 		}
 

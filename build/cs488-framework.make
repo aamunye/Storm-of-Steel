@@ -24,7 +24,7 @@ ifeq ($(config),debug)
   TARGETDIR  = ../lib
   TARGET     = $(TARGETDIR)/libcs488-framework.a
   DEFINES   += -DDEBUG
-  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include
+  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/OpenALBuild -I../shared/Alc -I../shared/OpenAL32/Include -I../shared/OpenAL32
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g -std=c++11
   CXXFLAGS  += $(CFLAGS) 
@@ -46,7 +46,7 @@ ifeq ($(config),release)
   TARGETDIR  = ../lib
   TARGET     = $(TARGETDIR)/libcs488-framework.a
   DEFINES   += -DNDEBUG
-  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include
+  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/OpenALBuild -I../shared/Alc -I../shared/OpenAL32/Include -I../shared/OpenAL32
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2 -std=c++11
   CXXFLAGS  += $(CFLAGS) 

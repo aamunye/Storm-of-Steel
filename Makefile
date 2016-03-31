@@ -6,7 +6,7 @@ ifndef config
 endif
 export config
 
-PROJECTS := cs488-framework imgui lodepng
+PROJECTS := cs488-framework imgui lodepng irrKlang
 
 .PHONY: all clean help $(PROJECTS)
 
@@ -24,10 +24,15 @@ lodepng:
 	@echo "==== Building lodepng ($(config)) ===="
 	@${MAKE} --no-print-directory -C build -f lodepng.make
 
+irrKlang: 
+	@echo "==== Building irrKlang ($(config)) ===="
+	@${MAKE} --no-print-directory -C build -f irrKlang.make
+
 clean:
 	@${MAKE} --no-print-directory -C build -f cs488-framework.make clean
 	@${MAKE} --no-print-directory -C build -f imgui.make clean
 	@${MAKE} --no-print-directory -C build -f lodepng.make clean
+	@${MAKE} --no-print-directory -C build -f irrKlang.make clean
 
 help:
 	@echo "Usage: make [config=name] [target]"
@@ -42,5 +47,6 @@ help:
 	@echo "   cs488-framework"
 	@echo "   imgui"
 	@echo "   lodepng"
+	@echo "   irrKlang"
 	@echo ""
 	@echo "For more information, see http://industriousone.com/premake/quick-start"

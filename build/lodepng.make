@@ -24,7 +24,7 @@ ifeq ($(config),debug)
   TARGETDIR  = ../lib
   TARGET     = $(TARGETDIR)/liblodepng.a
   DEFINES   += -DDEBUG
-  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/lodepng
+  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/OpenALBuild -I../shared/Alc -I../shared/OpenAL32/Include -I../shared/OpenAL32 -I../shared/lodepng
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -g
   CXXFLAGS  += $(CFLAGS) 
@@ -46,7 +46,7 @@ ifeq ($(config),release)
   TARGETDIR  = ../lib
   TARGET     = $(TARGETDIR)/liblodepng.a
   DEFINES   += -DNDEBUG
-  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/lodepng
+  INCLUDES  += -I../shared -I../shared/gl3w -I../shared/imgui -I../shared/include -I../shared/OpenALBuild -I../shared/Alc -I../shared/OpenAL32/Include -I../shared/OpenAL32 -I../shared/lodepng
   CPPFLAGS  += -MMD -MP $(DEFINES) $(INCLUDES)
   CFLAGS    += $(CPPFLAGS) $(ARCH) -O2
   CXXFLAGS  += $(CFLAGS) 
