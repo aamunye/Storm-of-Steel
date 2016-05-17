@@ -48,11 +48,11 @@ commands in order to compile the A0 executable using all .cpp files in the A0 di
 The controls are fairly simple.  This is a game with one solder(puppet) and one missile.
 Your objective is to target and hit the advancing soldier.
 
-1) Clicking on the W,A,S,D buttons makes the camera fly over the terrain.
-2) Scrolling the mouse up and down zooms in and out.
-3) Press space and a solder will start moving forwards(you can't control it, it just moves forward)
-4) Click on a point on the screen to launch the rocket to that point.
+1. Clicking on the W,A,S,D buttons makes the camera fly over the terrain.
+2. Scrolling the mouse up and down zooms in and out.
+3. Press space and a solder will start moving forwards(you can't control it, it just moves forward)
+4. Click on a point on the screen to launch the rocket to that point.
     - Note that the rocket doesn't aim directly at the target,
   because there is a wind component that perturbs the eventual destination of the payload
-5) When the rocket hits the ground or the solder, it disappears until you click on a point again
-6) When the soldier is hit, they disappear until you press space again.
+5. When the rocket hits the ground or the solder, it disappears until you click on a point again
+6. When the soldier is hit, they disappear until you press space again.
