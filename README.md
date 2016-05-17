@@ -56,3 +56,9 @@ Your objective is to target and hit the advancing soldier.
   because there is a wind component that perturbs the eventual destination of the payload
 5. When the rocket hits the ground or the solder, it disappears until you click on a point again
 6. When the soldier is hit, they disappear until you press space again.
+
+---
+
+## Project Report
+
+https://github.com/aamunye/Storm-of-Steel/wiki/Storm-of-Steel---Report
