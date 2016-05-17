@@ -61,4 +61,4 @@ Your objective is to target and hit the advancing soldier.
 
 ## Project Report
 
-https://github.com/aamunye/Storm-of-Steel/wiki/Storm-of-Steel---Report
+https://github.com/aamunye/Storm-of-Steel/wiki/Storm-of-Steel-Report
